@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:zhisuo_flutter/data/repositories/subject/subject_repository.dart';
 import 'package:zhisuo_flutter/logger/logger.dart';
+import 'package:zhisuo_flutter/services/service_controller.dart';
 
 import '../../routes/app_pages.dart';
 
@@ -37,6 +38,7 @@ class SplashController extends GetxController {
 
     try {
       await Get.find<SubjectRepository>().initializeSubjectData();
+      await Get.find<ServiceController>().refreshCurrentSubject();
       _goNext();
     } catch (e, stackTrace) {
       Logger.e('Splash initialize subject data failed',

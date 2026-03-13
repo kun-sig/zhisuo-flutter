@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../data/models/subject/subject_models.dart';
 import '../../data/repositories/subject/subject_repository.dart';
+import '../../services/service_controller.dart';
 
 /// 科目页控制器（UI 状态层）。
 ///
@@ -126,6 +127,10 @@ class SubjectController extends GetxController {
   /// - 异步记录点击次数，用于热门排行与默认选中策略。
   Future<void> onSubjectTap(String subjectId) async {
     selectedSubjectId.value = subjectId;
+    final subject = _findSubjectById(subjectId);
+    if (subject != null) {
+      ServiceController.to.setCurrentSubject(subject);
+    }
     await _repository.recordSubjectClick(subjectId);
     final hasHot = await _repository.hasHotSubjects();
     if (hasHot &&
@@ -150,6 +155,10 @@ class SubjectController extends GetxController {
     // 统一默认选中策略：若当前菜单命中“最近点击科目”，则优先选中。
     if (menu.defaultSelectedSubjectId.isNotEmpty) {
       selectedSubjectId.value = menu.defaultSelectedSubjectId;
+      final subject = _findSubjectById(menu.defaultSelectedSubjectId);
+      if (subject != null) {
+        ServiceController.to.setCurrentSubject(subject);
+      }
       return;
     }
 
@@ -161,5 +170,16 @@ class SubjectController extends GetxController {
     if (!existed) {
       selectedSubjectId.value = '';
     }
+  }
+
+  SubjectItem? _findSubjectById(String subjectId) {
+    for (final group in groups) {
+      for (final subject in group.subjects) {
+        if (subject.id == subjectId) {
+          return subject;
+        }
+      }
+    }
+    return null;
   }
 }

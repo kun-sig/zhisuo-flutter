@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zhisuo_flutter/data/local/app_database.dart';
 import 'package:zhisuo_flutter/data/local/subject_local_data_source.dart';
+import 'package:zhisuo_flutter/data/repositories/home/home_repository.dart';
 import 'package:zhisuo_flutter/data/repositories/subject/subject_repository.dart';
 import 'package:zhisuo_flutter/data/remote/subject_remote_service.dart';
 import 'package:zhisuo_flutter/i18n/app_translations.dart';
@@ -48,7 +49,11 @@ class InitBinding extends Bindings {
       ),
       permanent: true,
     );
-    Get.put<ServiceController>(ServiceController(), permanent: true);
+    Get.put(HomeRepository(HttpService.to), permanent: true);
+    Get.put<ServiceController>(
+      ServiceController(Get.find<SubjectRepository>()),
+      permanent: true,
+    );
     Get.put<ThemeController>(ThemeController(), permanent: true);
   }
 }

@@ -240,6 +240,38 @@ class SubjectLocalDataSource {
     return rows.first['subject_id']?.toString() ?? '';
   }
 
+  /// 按 ID 查询单个科目详情。
+  Future<SubjectItem?> getSubjectById(String subjectId) async {
+    if (subjectId.trim().isEmpty) {
+      return null;
+    }
+    final db = await _database.database;
+    final rows = await db.query(
+      'subjects',
+      where: 'id = ?',
+      whereArgs: [subjectId.trim()],
+      limit: 1,
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    final row = rows.first;
+    return SubjectItem(
+      id: row['id']?.toString() ?? '',
+      subjectCategoryId: row['subject_category_id']?.toString() ?? '',
+      subjectTagId: row['subject_tag_id']?.toString() ?? '',
+      name: row['name']?.toString() ?? '',
+      description: row['description']?.toString() ?? '',
+      order: _toInt(row['sort_order']),
+    );
+  }
+
+  /// 查询最近点击的科目详情。
+  Future<SubjectItem?> getLatestClickedSubject() async {
+    final subjectId = await getLatestClickedSubjectId();
+    return getSubjectById(subjectId);
+  }
+
   /// 查询热门科目列表（默认最多 100 条）。
   ///
   /// 排序规则：

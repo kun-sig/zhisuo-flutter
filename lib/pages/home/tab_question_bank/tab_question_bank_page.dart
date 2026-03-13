@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zhisuo_flutter/routes/app_navigator.dart';
+import 'package:zhisuo_flutter/widgets/current_subject_card.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_spacing.dart';
 import 'tab_question_bank_controller.dart';
 
 class TabQuestionBankPage extends GetView<TabQuestionBankController> {
@@ -16,6 +19,10 @@ class TabQuestionBankPage extends GetView<TabQuestionBankController> {
           // 增加 physics 确保滚动顺畅
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
+            _buildCurrentSubjectCard(),
+
+            const SizedBox(height: 16),
+
             /// 🔹 1. 每日一练卡片
             _buildDailyPracticeCard(),
 
@@ -51,6 +58,24 @@ class TabQuestionBankPage extends GetView<TabQuestionBankController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCurrentSubjectCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Obx(() {
+        final subject = controller.currentSubject.value;
+        final isLoading = controller.isCurrentSubjectLoading.value;
+        final countdownText = controller.examCountdownText;
+
+        return CurrentSubjectCard(
+          subjectName: subject?.name ?? '',
+          countdownText: countdownText,
+          isLoading: isLoading,
+          onTap: AppNavigator.startSubjectPage,
+        );
+      }),
     );
   }
 

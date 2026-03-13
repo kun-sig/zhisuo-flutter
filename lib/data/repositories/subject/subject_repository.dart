@@ -130,6 +130,16 @@ class SubjectRepository {
     return _localDataSource.hasSubjectClicks();
   }
 
+  /// 获取最近点击科目 ID，用于首页等场景传递业务上下文。
+  Future<String> getLatestClickedSubjectId() {
+    return _localDataSource.getLatestClickedSubjectId();
+  }
+
+  /// 获取最近点击的科目详情，用于题库等场景展示当前科目。
+  Future<SubjectItem?> getLatestClickedSubject() {
+    return _localDataSource.getLatestClickedSubject();
+  }
+
   /// 组装分类列表：存在点击时注入“热门”固定菜单。
   Future<List<SubjectCategoryItem>> _buildCategoriesWithHot() async {
     final categories = await _localDataSource.getCategories();
