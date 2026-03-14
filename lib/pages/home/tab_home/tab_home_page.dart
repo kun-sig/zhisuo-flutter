@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../../../data/models/home/home_models.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radius.dart';
+import '../../../theme/app_spacing.dart';
+import '../../../theme/app_text_styles.dart';
 import 'tab_home_controller.dart';
 
 class TabHomePage extends GetView<TabHomeController> {
@@ -9,131 +14,171 @@ class TabHomePage extends GetView<TabHomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          /// =========================
-          /// 🔥 顶部轮播
-          /// =========================
-          SizedBox(
-            height: 220,
-            child: PageView.builder(
-              controller: controller.pageController,
-              onPageChanged: controller.onPageChanged,
-              itemCount: controller.banners.length,
-              itemBuilder: (context, index) {
-                final item = controller.banners[index];
-
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(
-                      item.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (BuildContext context, Object error,
-                          StackTrace? stackTrace) {
-                        return SizedBox.shrink();
-                      },
-                    ),
-
-                    /// 渐变遮罩
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.8),
-                            AppColors.secondary.withValues(alpha: 0.6),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    /// 文本
-                    Positioned(
-                      left: 20,
-                      bottom: 30,
-                      right: 20,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            item.subtitle,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Obx(
+          () => RefreshIndicator(
+            onRefresh: controller.onRefresh,
+            child: ListView(
+              controller: controller.articleScrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                _buildBannerSection(),
+                SizedBox(height: AppSpacing.lg),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Text('最新资讯', style: AppTextStyles.title),
+                ),
+                SizedBox(height: AppSpacing.md),
+                if (controller.isLoading.value &&
+                    !controller.hasBanners &&
+                    !controller.hasArticles)
+                  _buildLoadingState()
+                else if (controller.errorText.value.isNotEmpty &&
+                    !controller.hasBanners &&
+                    !controller.hasArticles)
+                  _buildErrorState()
+                else if (!controller.hasArticles)
+                  _buildEmptyState()
+                else
+                  ...controller.articles.map(_buildArticleItem),
+                _buildLoadMoreFooter(),
+                SizedBox(height: AppSpacing.xl),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
 
-          const SizedBox(height: 12),
+  Widget _buildBannerSection() {
+    if (controller.isLoading.value && !controller.hasBanners) {
+      return Container(
+        height: 220,
+        margin: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.large),
+        ),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
 
-          /// =========================
-          /// 🔵 指示器
-          /// =========================
-          Obx(() {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                controller.banners.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: controller.currentIndex.value == index ? 18 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: controller.currentIndex.value == index
-                        ? AppColors.secondary
-                        : AppColors.secondary.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+    if (!controller.hasBanners) {
+      return Container(
+        height: 220,
+        margin: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.large),
+        ),
+        alignment: Alignment.center,
+        child: Text('暂无横幅内容', style: AppTextStyles.body),
+      );
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 220,
+          child: PageView.builder(
+            controller: controller.pageController,
+            onPageChanged: controller.onPageChanged,
+            itemCount: controller.banners.length,
+            itemBuilder: (context, index) {
+              final item = controller.banners[index];
+              return _buildBannerItem(item);
+            },
+          ),
+        ),
+        if (controller.banners.length > 1) ...[
+          SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              controller.banners.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                width: controller.currentBannerIndex.value == index ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: controller.currentBannerIndex.value == index
+                      ? AppColors.secondary
+                      : AppColors.buttonDisabled,
+                  borderRadius: BorderRadius.circular(AppRadius.small),
                 ),
               ),
-            );
-          }),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 
-          const SizedBox(height: 24),
-
-          /// =========================
-          /// 📰 下半部分滚动区域
-          /// =========================
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
+  Widget _buildBannerItem(HomeBannerItem item) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            item.imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: AppColors.buttonLight,
+                alignment: Alignment.center,
+                child: Text('图片加载失败', style: AppTextStyles.caption),
+              );
+            },
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.65),
+                  AppColors.primary.withValues(alpha: 0.08),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            bottom: AppSpacing.lg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// 标题
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    "最新资讯",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.headline.copyWith(
+                    color: AppColors.surface,
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
-                /// 新闻列表
-                ...List.generate(
-                  8,
-                  (index) => _buildNewsItem(),
-                ),
+                if (item.overlay.text.isNotEmpty) ...[
+                  SizedBox(height: AppSpacing.xs),
+                  Text(
+                    item.overlay.text,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.surface,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -142,83 +187,175 @@ class TabHomePage extends GetView<TabHomeController> {
     );
   }
 
-  /// =========================
-  /// 📰 纯文字新闻 Item
-  /// =========================
-  Widget _buildNewsItem() {
+  Widget _buildArticleItem(HomeArticleItem item) {
     return InkWell(
-      onTap: () {},
-      child: Padding(
+      onTap: () => controller.onArticleTap(item),
+      child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 18,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.lg,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 标题
-            const Text(
-              "行测高频考点分析：资料分析必考题型总结与核心技巧解析",
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-
-            const SizedBox(height: 10),
-
-            /// 标签 + 时间 + 阅读量
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(6),
+                Expanded(
+                  child: Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.title.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  "高频考点",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
+                if (item.coverUrl.isNotEmpty) ...[
+                  SizedBox(width: AppSpacing.md),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.small),
+                    child: Image.network(
+                      item.coverUrl,
+                      width: 88,
+                      height: 66,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 88,
+                          height: 66,
+                          color: AppColors.buttonLight,
+                          alignment: Alignment.center,
+                          child: Text('无图', style: AppTextStyles.caption),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                const Text(
-                  "2小时前",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  "阅读 2.3k",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black38,
-                  ),
-                ),
+                ],
               ],
             ),
-
-            const SizedBox(height: 18),
-
-            /// 分割线
-            Container(
-              height: 0.5,
-              color: Colors.black.withValues(alpha: 0.06),
+            SizedBox(height: AppSpacing.sm),
+            if (item.summary.isNotEmpty)
+              Text(
+                item.summary,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
+            SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                if (item.tag.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.buttonLight,
+                      borderRadius: BorderRadius.circular(AppRadius.small),
+                    ),
+                    child: Text(
+                      item.tag,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                SizedBox(width: AppSpacing.sm),
+                Text(_formatDate(item.publishedAt),
+                    style: AppTextStyles.caption),
+                SizedBox(width: AppSpacing.sm),
+                Text('阅读 ${item.viewCount}', style: AppTextStyles.caption),
+              ],
             ),
+            SizedBox(height: AppSpacing.lg),
+            Container(height: 0.5, color: AppColors.divider),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildLoadMoreFooter() {
+    if (!controller.hasArticles) {
+      return const SizedBox.shrink();
+    }
+    if (controller.isLoadingMore.value) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Center(
+          child: Text('加载更多中...', style: AppTextStyles.caption),
+        ),
+      );
+    }
+    if (controller.loadMoreErrorText.value.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Center(
+          child: TextButton(
+            onPressed: controller.retryLoadMore,
+            child: Text(controller.loadMoreErrorText.value),
+          ),
+        ),
+      );
+    }
+    if (!controller.hasMore) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Center(
+          child: Text('没有更多内容了', style: AppTextStyles.caption),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildLoadingState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Center(
+        child: Text('加载中...', style: AppTextStyles.body),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Text(controller.errorText.value, style: AppTextStyles.body),
+          SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => controller.loadHomeFeed(reset: true),
+            child: Text('重试', style: AppTextStyles.body),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Center(
+        child: Text('暂无资讯内容', style: AppTextStyles.body),
+      ),
+    );
+  }
+
+  String _formatDate(int timestampSeconds) {
+    if (timestampSeconds <= 0) {
+      return '--';
+    }
+    final date = DateTime.fromMillisecondsSinceEpoch(timestampSeconds * 1000);
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 }

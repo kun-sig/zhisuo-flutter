@@ -58,7 +58,8 @@ class LoginController extends GetxController {
     isLoggedIn.value = true;
     isLoading.value = false;
     //Get.offAllNamed('/home');
-    AppNavigator.startSubjectPage();
+    //AppNavigator.startSubjectPage();
+    AppNavigator.startHomePage();
   }
 
   @override

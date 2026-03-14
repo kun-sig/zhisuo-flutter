@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:zhisuo_flutter/config/app_config.dart';
 import 'package:zhisuo_flutter/logger/logger.dart';
 
 import 'app.dart';
@@ -18,7 +19,9 @@ void main() {
       );
       // make flutter draw behind navigation bar
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      await AppConfig.load();
       await Logger.init();
+      Logger.i('App config loaded: env=${AppConfig.instance.env}');
       runApp(const App());
     },
     (error, stackTrace) {

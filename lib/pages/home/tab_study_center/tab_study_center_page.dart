@@ -81,7 +81,7 @@ class TabStudyCenterPage extends GetView<TabStudyCenterController> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.06),
+        color: AppColors.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -145,7 +145,7 @@ class TabStudyCenterPage extends GetView<TabStudyCenterController> {
       itemBuilder: (_, index) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.05),
+            color: Colors.grey.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           alignment: Alignment.center,
@@ -176,7 +176,7 @@ class TabStudyCenterPage extends GetView<TabStudyCenterController> {
             vertical: 18,
           ),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.04),
+            color: Colors.grey.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(

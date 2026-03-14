@@ -3,22 +3,22 @@ import 'package:get/get.dart';
 import 'package:zhisuo_flutter/logger/logger.dart';
 
 import '../data/models/subject/subject_models.dart';
-import '../data/repositories/subject/subject_repository.dart';
+import 'current_subject_service.dart';
 
 class ServiceController extends GetxController with WidgetsBindingObserver {
-  ServiceController(this._subjectRepository);
+  ServiceController(this._currentSubjectService);
 
   static ServiceController get to => Get.find();
 
-  final SubjectRepository _subjectRepository;
+  final CurrentSubjectService _currentSubjectService;
 
   /// Mocks a login process
   final isLoggedIn = false.obs;
   bool get isLoggedInValue => isLoggedIn.value;
 
   /// 当前题库上下文科目。
-  final currentSubject = Rxn<SubjectItem>();
-  final isCurrentSubjectLoading = false.obs;
+  Rxn<SubjectItem> get currentSubject => _currentSubjectService.currentSubject;
+  RxBool get isCurrentSubjectLoading => _currentSubjectService.isLoading;
 
   @override
   void onInit() {
@@ -45,20 +45,11 @@ class ServiceController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> refreshCurrentSubject() async {
-    isCurrentSubjectLoading.value = true;
-    try {
-      currentSubject.value = await _subjectRepository.getLatestClickedSubject();
-    } catch (e, stackTrace) {
-      Logger.e('refreshCurrentSubject failed',
-          error: e, stackTrace: stackTrace);
-      currentSubject.value = null;
-    } finally {
-      isCurrentSubjectLoading.value = false;
-    }
+    await _currentSubjectService.refreshCurrentSubject();
   }
 
   void setCurrentSubject(SubjectItem subject) {
-    currentSubject.value = subject;
+    _currentSubjectService.setCurrentSubject(subject);
   }
 
   /// 监听 App 生命周期变化

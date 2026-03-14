@@ -124,11 +124,23 @@ flutter run
 ## 6. 构建发布
 
 ```bash
-# Android
+# Android（dev，默认）
 flutter build apk --release
 
-# iOS
+# Android（test）
+flutter build apk --release --dart-define=APP_ENV=test
+
+# Android（prod）
+flutter build apk --release --dart-define=APP_ENV=prod
+
+# iOS（dev，默认）
 flutter build ios --release
+
+# iOS（test）
+flutter build ios --release --dart-define=APP_ENV=test
+
+# iOS（prod）
+flutter build ios --release --dart-define=APP_ENV=prod
 ```
 
 OpenHarmony 构建请按 `ohos/` 目录工程配置执行对应构建流程。
@@ -137,15 +149,24 @@ OpenHarmony 构建请按 `ohos/` 目录工程配置执行对应构建流程。
 
 ### 7.1 API 基础地址
 
-当前网络层默认地址位于：
+当前 API 地址来自配置文件：
 
-- `lib/services/http_service.dart`
+- `assets/config/app_config_dev.json`
+- `assets/config/app_config_test.json`
+- `assets/config/app_config_prod.json`
 
-```dart
-baseUrl: "https://api.example.com"
+环境选择通过 `APP_ENV` 指定：
+
+```bash
+# 默认 dev（不传 APP_ENV）
+flutter run
+
+# 指定 test
+flutter run --dart-define=APP_ENV=test
+
+# 指定 prod
+flutter run --dart-define=APP_ENV=prod
 ```
-
-接入真实环境时建议改为分环境配置（dev/test/prod）并通过 CI/CD 注入。
 
 ### 7.2 主题与品牌
 

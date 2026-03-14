@@ -1,23 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 
+import '../config/app_config.dart';
 import '../logger/logger.dart';
 import 'api_exception.dart';
 
 class HttpService {
   static HttpService get to => Get.find();
 
-  static const String _defaultBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8080',
-  );
-
   late final Dio _dio;
 
   HttpService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: _defaultBaseUrl,
+        baseUrl: AppConfig.instance.apiBaseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {
