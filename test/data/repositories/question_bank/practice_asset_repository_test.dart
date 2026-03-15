@@ -1,13 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zhisuo_flutter/data/remote/asset_remote_service.dart';
 import 'package:zhisuo_flutter/data/repositories/question_bank/practice_asset_repository.dart';
+import 'package:zhisuo_flutter/services/api_exception.dart';
 
 class _FakeAssetRemoteDataSource implements AssetRemoteDataSource {
+  bool reviewRecordsShouldFail = false;
+
   @override
   Future<Map<String, dynamic>> getPracticeRecords({
     required String userId,
     required String subjectId,
-    required String practiceMode,
+    required String categoryCode,
+    String unitId = '',
     required int page,
     required int pageSize,
   }) async {
@@ -19,14 +23,53 @@ class _FakeAssetRemoteDataSource implements AssetRemoteDataSource {
           'userId': userId,
           'subjectId': subjectId,
           'sessionId': 'session-1',
-          'practiceMode':
-              practiceMode.isEmpty ? 'chapter_practice' : practiceMode,
+          'categoryCode': categoryCode.isEmpty ? 'chapter' : categoryCode,
+          'unitId': unitId.isEmpty ? 'chapter-1' : unitId,
+          'unitTitle': '第一章',
           'questionCount': 20,
           'correctCount': 16,
           'wrongCount': 4,
           'correctRate': 0.8,
           'durationSeconds': 480,
           'finishedAt': 1760000100,
+        },
+      ],
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> getReviewRecords({
+    required String userId,
+    required String subjectId,
+    required String categoryCode,
+    String unitId = '',
+    required int page,
+    required int pageSize,
+  }) async {
+    if (reviewRecordsShouldFail) {
+      throw const ApiException(
+        code: 404,
+        message: 'not found',
+        httpStatus: 404,
+      );
+    }
+    return {
+      'totalSize': 1,
+      'objects': [
+        {
+          'id': 'review-1',
+          'userId': userId,
+          'subjectId': subjectId,
+          'sessionId': 'review-session-1',
+          'categoryCode': categoryCode.isEmpty ? 'chapter' : categoryCode,
+          'unitId': unitId.isEmpty ? 'mock-paper-1' : unitId,
+          'unitTitle': '模拟试卷 1',
+          'questionCount': 12,
+          'correctCount': 9,
+          'wrongCount': 3,
+          'correctRate': 0.75,
+          'durationSeconds': 360,
+          'finishedAt': 1760000700,
         },
       ],
     };
@@ -142,15 +185,50 @@ class _FakeAssetRemoteDataSource implements AssetRemoteDataSource {
       },
     };
   }
+
+  @override
+  Future<Map<String, dynamic>> updatePracticeNote({
+    required String userId,
+    required String subjectId,
+    required String noteId,
+    required String content,
+  }) async {
+    return {
+      'note': {
+        'id': noteId,
+        'userId': userId,
+        'subjectId': subjectId,
+        'questionId': 'question-note-2',
+        'sessionId': 'session-2',
+        'content': content,
+        'createdAt': 1760000500,
+        'updatedAt': 1760000600,
+        'status': 'approved',
+        'reviewRemark': '已更新',
+        'reviewedAt': 1760000600,
+      },
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> deletePracticeNote({
+    required String userId,
+    required String subjectId,
+    required String noteId,
+  }) async {
+    return {
+      'deleted': true,
+      'noteId': noteId,
+    };
+  }
 }
 
 void main() {
   group('PracticeAssetRepository', () {
     test('maps wrong questions, records, favorites, and notes responses',
         () async {
-      final repository = PracticeAssetRepository(
-        _FakeAssetRemoteDataSource(),
-      );
+      final remote = _FakeAssetRemoteDataSource();
+      final repository = PracticeAssetRepository(remote);
 
       final wrongQuestions = await repository.fetchWrongQuestions(
         userId: 'demo-user',
@@ -161,6 +239,13 @@ void main() {
       final practiceRecords = await repository.fetchPracticeRecords(
         userId: 'demo-user',
         subjectId: 'subject-1',
+        page: 1,
+        pageSize: 20,
+      );
+      final reviewRecords = await repository.fetchReviewRecords(
+        userId: 'demo-user',
+        subjectId: 'subject-1',
+        categoryCode: 'mock_paper',
         page: 1,
         pageSize: 20,
       );
@@ -189,6 +274,17 @@ void main() {
         sessionId: 'session-2',
         content: 'new note',
       );
+      final updatedNote = await repository.updatePracticeNote(
+        userId: 'demo-user',
+        subjectId: 'subject-1',
+        noteId: 'note-created-1',
+        content: 'updated note',
+      );
+      await repository.deletePracticeNote(
+        userId: 'demo-user',
+        subjectId: 'subject-1',
+        noteId: 'note-created-1',
+      );
 
       expect(wrongQuestions.totalSize, 21);
       expect(wrongQuestions.hasMore, isTrue);
@@ -198,8 +294,14 @@ void main() {
       expect(practiceRecords.totalSize, 3);
       expect(practiceRecords.hasMore, isFalse);
       expect(practiceRecords.items.single.sessionId, 'session-1');
+      expect(practiceRecords.items.single.categoryCode, 'chapter');
+      expect(practiceRecords.items.single.unitId, 'chapter-1');
       expect(practiceRecords.items.single.correctRate, 80.0);
       expect(practiceRecords.items.single.durationSeconds, 480);
+      expect(reviewRecords.totalSize, 1);
+      expect(reviewRecords.items.single.sessionId, 'review-session-1');
+      expect(reviewRecords.items.single.categoryCode, 'mock_paper');
+      expect(reviewRecords.items.single.unitTitle, '模拟试卷 1');
 
       expect(favorites.totalSize, 2);
       expect(favorites.items.single.questionId, 'question-favorite-1');
@@ -209,6 +311,29 @@ void main() {
       expect(notes.items.single.status, 'pending');
       expect(createdNote.questionId, 'question-note-2');
       expect(createdNote.content, 'new note');
+      expect(updatedNote.id, 'note-created-1');
+      expect(updatedNote.content, 'updated note');
+      expect(updatedNote.status, 'approved');
+    });
+
+    test(
+        'fetchReviewRecords falls back to practice records when route unavailable',
+        () async {
+      final remote = _FakeAssetRemoteDataSource()
+        ..reviewRecordsShouldFail = true;
+      final repository = PracticeAssetRepository(remote);
+
+      final reviewRecords = await repository.fetchReviewRecords(
+        userId: 'demo-user',
+        subjectId: 'subject-1',
+        categoryCode: 'mock_paper',
+        page: 1,
+        pageSize: 20,
+      );
+
+      expect(reviewRecords.totalSize, 3);
+      expect(reviewRecords.items.single.sessionId, 'session-1');
+      expect(reviewRecords.items.single.categoryCode, 'mock_paper');
     });
   });
 }

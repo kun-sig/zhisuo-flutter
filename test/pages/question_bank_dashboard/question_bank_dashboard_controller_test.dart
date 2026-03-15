@@ -125,7 +125,6 @@ class _FakeQuestionBankDashboardRepository
           : null,
       examCountdown: null,
       continueSession: null,
-      practiceModules: const [],
       practiceCategories: [
         const PracticeCategoryCardData(
           categoryCode: 'chapter',
@@ -195,7 +194,6 @@ QuestionBankDashboardData _buildDashboardData() {
     ),
     examCountdown: null,
     continueSession: null,
-    practiceModules: const [],
     practiceCategories: const [
       PracticeCategoryCardData(
         categoryCode: 'chapter',
@@ -248,7 +246,6 @@ QuestionBankDashboardData _buildDashboardDataWithContinueFallback() {
     ),
     examCountdown: null,
     continueSession: null,
-    practiceModules: const [],
     practiceCategories: const [
       PracticeCategoryCardData(
         categoryCode: 'chapter',

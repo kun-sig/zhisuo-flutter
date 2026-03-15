@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/question_bank/question_asset_card.dart';
 import 'favorites_controller.dart';
 
 class FavoritesPage extends GetView<FavoritesController> {
@@ -172,74 +173,28 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.large),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.questionId.toString().trim().isEmpty
-                ? '--'
-                : item.questionId.toString().trim(),
-            style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _InfoRow(
-            label: LocaleKeys.favoritesQuestionId.tr,
-            value: item.questionId.toString().trim().isEmpty
-                ? '--'
-                : item.questionId.toString().trim(),
-          ),
-          _InfoRow(
-            label: LocaleKeys.favoritesCreatedAt.tr,
-            value: _formatDateTime(item.createdAt),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton(
-              onPressed: isUpdating ? null : onRemove,
-              child: Text(
-                isUpdating
-                    ? LocaleKeys.favoritesRemoving.tr
-                    : LocaleKeys.favoritesRemove.tr,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 88,
-            child: Text(label, style: AppTextStyles.caption),
-          ),
-          Expanded(
-            child: Text(value, style: AppTextStyles.body),
-          ),
-        ],
-      ),
+    return QuestionAssetCard(
+      title: item.questionId.toString(),
+      highlightText: _formatDateTime(item.createdAt),
+      highlightColor: AppColors.warning,
+      metaItems: [
+        QuestionAssetMetaItem(
+          label: LocaleKeys.favoritesQuestionId.tr,
+          value: item.questionId.toString(),
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.favoritesCreatedAt.tr,
+          value: _formatDateTime(item.createdAt),
+        ),
+      ],
+      actions: [
+        QuestionAssetActionItem(
+          label: isUpdating
+              ? LocaleKeys.favoritesRemoving.tr
+              : LocaleKeys.favoritesRemove.tr,
+          onPressed: isUpdating ? null : onRemove,
+        ),
+      ],
     );
   }
 }

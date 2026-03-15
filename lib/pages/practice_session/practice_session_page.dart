@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../data/models/question_bank/question_display_models.dart';
 import '../../i18n/locale_keys.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/question_bank/answer_sheet_bar.dart';
 import '../../widgets/question_bank/practice_progress_header.dart';
+import '../../widgets/question_bank/question_action_bar.dart';
+import '../../widgets/question_bank/question_analysis_view.dart';
+import '../../widgets/question_bank/question_bottom_action_bar.dart';
+import '../../widgets/question_bank/question_feedback_banner.dart';
 import '../../widgets/question_bank/question_option_group_view.dart';
 import '../../widgets/question_bank/question_stem_view.dart';
 import 'practice_session_controller.dart';
@@ -76,23 +82,23 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 PracticeProgressHeader(
-                  title: controller.pageTitle,
-                  currentNumber: controller.currentIndex.value + 1,
-                  totalCount: detail.session.questionCount,
-                  answeredCount: detail.session.answeredCount,
-                  remainingCount: detail.remainingCount,
+                  data: controller.questionProgress,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AnswerSheetBar(
+                  data: controller.questionAnswerSheet,
+                  onTapItem: controller.jumpToQuestion,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 QuestionStemView(
-                  questionType: question.questionType,
-                  stem: question.stem,
-                  chapterName: question.chapterName,
-                  questionCategoryName: question.questionCategoryName,
+                  data: QuestionDisplayData.fromPracticeQuestion(question),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 if (question.options.isNotEmpty)
                   QuestionOptionGroupView(
-                    options: question.options,
+                    options: question.options
+                        .map(QuestionOptionDisplayData.fromPracticeOption)
+                        .toList(),
                     selectedAnswers: controller.selectedAnswers,
                     onTap: controller.selectOption,
                   )
@@ -101,75 +107,36 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
                     message: LocaleKeys.practiceSessionNoOptions.tr,
                     compact: true,
                   ),
+                if (controller.questionFeedback != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  QuestionFeedbackBanner(
+                    data: controller.questionFeedback!,
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppRadius.large),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        LocaleKeys.practiceSessionAnalysisTitle.tr,
-                        style: AppTextStyles.title.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        question.analysis.trim().isEmpty
-                            ? LocaleKeys.practiceSessionNoAnalysis.tr
-                            : question.analysis.trim(),
-                        style: AppTextStyles.body.copyWith(height: 1.6),
-                      ),
-                    ],
-                  ),
+                QuestionActionBar(
+                  data: controller.questionActionBar,
                 ),
+                if (controller.currentQuestionNoteSummary.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  _QuestionNotePreviewCard(
+                    summary: controller.currentQuestionNoteSummary,
+                    noteCount: controller.currentQuestionNoteCount,
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: controller.currentIndex.value > 0 &&
-                                !controller.isSubmitLoading.value &&
-                                !controller.isFinishLoading.value
-                            ? controller.goPrevious
-                            : null,
-                        child: Text(LocaleKeys.practiceSessionPrevious.tr),
-                      ),
+                if (controller.shouldShowAnalysis) ...[
+                  QuestionAnalysisView(
+                    data: QuestionAnalysisDisplayData.practice(
+                      title: LocaleKeys.practiceSessionAnalysisTitle.tr,
+                      content: question.analysis,
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: !controller.isSubmitLoading.value &&
-                                !controller.isFinishLoading.value
-                            ? controller.submitCurrentAnswer
-                            : null,
-                        child: Text(
-                          controller.isSubmitLoading.value
-                              ? LocaleKeys.practiceSessionSubmitting.tr
-                              : LocaleKeys.practiceSessionSubmit.tr,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.tonal(
-                    onPressed: !controller.isFinishLoading.value &&
-                            !controller.isSubmitLoading.value
-                        ? controller.finishPractice
-                        : null,
-                    child: Text(
-                      controller.isFinishLoading.value
-                          ? LocaleKeys.practiceSessionFinishing.tr
-                          : LocaleKeys.practiceSessionFinish.tr,
-                    ),
+                    emptyText: LocaleKeys.practiceSessionNoAnalysis.tr,
                   ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                QuestionBottomActionBar(
+                  data: controller.questionBottomActionBar,
                 ),
               ],
             );
@@ -324,6 +291,61 @@ class _ContextMetric extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(label, style: AppTextStyles.caption),
       ],
+    );
+  }
+}
+
+class _QuestionNotePreviewCard extends StatelessWidget {
+  const _QuestionNotePreviewCard({
+    required this.summary,
+    required this.noteCount,
+  });
+
+  final String summary;
+  final int noteCount;
+
+  /// 展示当前题最近笔记摘要，帮助用户在不离开会话的情况下快速回看自己的记录。
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.buttonLight,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.sticky_note_2_rounded,
+                color: AppColors.primary,
+                size: 18,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                LocaleKeys.practiceSessionNotePreviewTitle.trParams({
+                  'count': '$noteCount',
+                }),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            summary,
+            style: AppTextStyles.body.copyWith(height: 1.6),
+          ),
+        ],
+      ),
     );
   }
 }

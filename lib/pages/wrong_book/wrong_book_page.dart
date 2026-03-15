@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models/question_bank/question_display_models.dart';
 import '../../i18n/locale_keys.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/question_bank/question_asset_card.dart';
+import '../../widgets/question_bank/question_stem_view.dart';
 import 'wrong_book_controller.dart';
 
 class WrongBookPage extends GetView<WrongBookController> {
@@ -151,7 +154,44 @@ class _FilterCard extends StatelessWidget {
             LocaleKeys.wrongBookFilterTip.tr,
             style: AppTextStyles.caption,
           ),
+          if (controller.retryPracticeStatusText.trim().isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            _RetryStatusBanner(
+              message: controller.retryPracticeStatusText,
+              isReady: controller.isRetryPracticeReady,
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _RetryStatusBanner extends StatelessWidget {
+  const _RetryStatusBanner({
+    required this.message,
+    required this.isReady,
+  });
+
+  final String message;
+  final bool isReady;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = isReady ? AppColors.success : AppColors.warning;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Text(
+        message.trim(),
+        style: AppTextStyles.body.copyWith(color: accent),
       ),
     );
   }
@@ -242,68 +282,33 @@ class _WrongQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.large),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            questionId.trim().isEmpty ? '--' : questionId.trim(),
-            style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _InfoRow(
-            label: LocaleKeys.wrongBookQuestionId.tr,
-            value: questionId.trim().isEmpty ? '--' : questionId.trim(),
-          ),
-          _InfoRow(
-            label: LocaleKeys.wrongBookWrongCount.tr,
-            value: '$wrongCount',
-          ),
-          _InfoRow(
-            label: LocaleKeys.wrongBookLastWrongAt.tr,
-            value: _formatDateTime(lastWrongAt),
-          ),
-          _InfoRow(
-            label: LocaleKeys.wrongBookStatus.tr,
-            value: statusText.trim().isEmpty
-                ? LocaleKeys.wrongBookStatusUnknown.tr
-                : statusText.trim(),
-          ),
-        ],
-      ),
+    final questionDisplayData = QuestionDisplayData.fromWrongQuestionAsset(
+      questionId: questionId,
+      wrongCount: wrongCount,
+      statusText: statusText,
     );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 88,
-            child: Text(label, style: AppTextStyles.caption),
-          ),
-          Expanded(
-            child: Text(value, style: AppTextStyles.body),
-          ),
-        ],
+    return QuestionAssetCard(
+      title: questionId,
+      header: QuestionStemView(
+        data: questionDisplayData,
+        showCardDecoration: false,
       ),
+      metaItems: [
+        QuestionAssetMetaItem(
+          label: LocaleKeys.wrongBookWrongCount.tr,
+          value: '$wrongCount',
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.wrongBookLastWrongAt.tr,
+          value: _formatDateTime(lastWrongAt),
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.wrongBookStatus.tr,
+          value: statusText.trim().isEmpty
+              ? LocaleKeys.wrongBookStatusUnknown.tr
+              : statusText.trim(),
+        ),
+      ],
     );
   }
 }

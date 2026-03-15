@@ -13,6 +13,11 @@ import '../../services/app_session_service.dart';
 import '../../services/current_subject_service.dart';
 
 class QuestionBankDashboardController extends GetxController {
+  static const bool _autoOpenContinueSession = bool.fromEnvironment(
+    'AUTO_OPEN_CONTINUE_SESSION',
+    defaultValue: false,
+  );
+
   QuestionBankDashboardController(
     this._repository,
     this._currentSubjectService,
@@ -28,6 +33,7 @@ class QuestionBankDashboardController extends GetxController {
   final errorText = ''.obs;
 
   late final Worker _subjectWorker;
+  bool _hasAutoOpenedContinueSession = false;
 
   @override
   void onInit() {
@@ -97,6 +103,7 @@ class QuestionBankDashboardController extends GetxController {
         platform: _appSessionService.platform,
       );
       dashboard.value = data;
+      _maybeAutoOpenContinueSession();
     } catch (e, stackTrace) {
       Logger.e(
         'QuestionBankDashboardController.refreshDashboard failed',
@@ -204,6 +211,14 @@ class QuestionBankDashboardController extends GetxController {
       case 'practice_notes':
         AppNavigator.startPracticeNotesPage();
         return;
+      case 'review_records':
+        AppNavigator.startReviewRecordsPage();
+        return;
+      case 'qa_threads':
+      case 'qa':
+      case 'question_answer':
+        AppNavigator.startQaThreadsPage();
+        return;
       default:
         _showNotice(
           '${tool.toolName} '
@@ -223,6 +238,22 @@ class QuestionBankDashboardController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       duration: const Duration(seconds: 2),
+    );
+  }
+
+  /// 仅在联调开关开启时自动进入继续练习，避免每次验证会话链路都手动点击首页卡片。
+  void _maybeAutoOpenContinueSession() {
+    if (!_autoOpenContinueSession || _hasAutoOpenedContinueSession) {
+      return;
+    }
+    final session = continueSession;
+    if (session == null || !session.hasUnitContext) {
+      return;
+    }
+    _hasAutoOpenedContinueSession = true;
+    Future<void>.delayed(
+      const Duration(milliseconds: 300),
+      onContinueSessionTap,
     );
   }
 

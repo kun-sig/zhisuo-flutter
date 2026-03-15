@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/question_bank/practice_session_models.dart';
+import '../../data/models/question_bank/question_display_models.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
@@ -14,10 +14,11 @@ class QuestionOptionGroupView extends StatelessWidget {
     super.key,
   });
 
-  final List<PracticeQuestionOptionData> options;
+  final List<QuestionOptionDisplayData> options;
   final List<String> selectedAnswers;
   final ValueChanged<String> onTap;
 
+  /// 统一渲染题目选项区，组件只消费展示协议，不直接依赖练习业务模型。
   @override
   Widget build(BuildContext context) {
     return Column(

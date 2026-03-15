@@ -7,6 +7,8 @@ import '../../../helpers/get_test_helper.dart';
 
 class _FakeQuestionBankRemoteDataSource
     implements QuestionBankRemoteDataSource {
+  int practiceUnitListCallCount = 0;
+
   @override
   Future<Map<String, dynamic>> fetchDashboard({
     required String userId,
@@ -24,7 +26,6 @@ class _FakeQuestionBankRemoteDataSource
       },
       'continueSession': {
         'sessionId': 'session-1',
-        'practiceMode': '章节练习',
         'progressText': '8/20',
         'lastAnsweredAt': 1760000000,
         'categoryCode': 'chapter',
@@ -182,6 +183,7 @@ class _FakeQuestionBankRemoteDataSource
     required int page,
     required int pageSize,
   }) async {
+    practiceUnitListCallCount += 1;
     return {
       'totalSize': 3,
       'objects': [
@@ -274,9 +276,8 @@ void main() {
     });
 
     test('fetchPracticeUnitList maps paging data and sorts units', () async {
-      final repository = QuestionBankDashboardRepository(
-        _FakeQuestionBankRemoteDataSource(),
-      );
+      final remote = _FakeQuestionBankRemoteDataSource();
+      final repository = QuestionBankDashboardRepository(remote);
 
       final result = await repository.fetchPracticeUnitList(
         userId: 'demo-user',
@@ -292,13 +293,13 @@ void main() {
       expect(result.items.first.correctRate, 88.0);
       expect(result.items.last.progressStatus, 'in_progress');
       expect(result.items.last.correctRate, 72.0);
+      expect(remote.practiceUnitListCallCount, 1);
     });
 
     test('continue session displayTitle falls back to localized mode name', () {
       configureGetTest();
       final session = ContinueSessionViewData.fromJson(const {
         'sessionId': 'session-1',
-        'practiceMode': 'chapter_practice',
         'progressText': '1/3',
         'categoryCode': 'chapter',
         'unitId': 'chapter-1',

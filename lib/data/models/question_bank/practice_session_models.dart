@@ -94,7 +94,6 @@ class PracticeSessionSummaryData {
     required this.sessionId,
     required this.userId,
     required this.subjectId,
-    required this.practiceMode,
     required this.status,
     required this.questionCount,
     required this.answeredCount,
@@ -103,9 +102,6 @@ class PracticeSessionSummaryData {
     required this.startedAt,
     required this.finishedAt,
     required this.lastAnsweredAt,
-    required this.sourceType,
-    required this.sourceId,
-    required this.sourceTitle,
     required this.categoryCode,
     required this.unitId,
     required this.unitTitle,
@@ -115,7 +111,6 @@ class PracticeSessionSummaryData {
   final String sessionId;
   final String userId;
   final String subjectId;
-  final String practiceMode;
   final String status;
   final int questionCount;
   final int answeredCount;
@@ -124,9 +119,6 @@ class PracticeSessionSummaryData {
   final DateTime? startedAt;
   final DateTime? finishedAt;
   final DateTime? lastAnsweredAt;
-  final String sourceType;
-  final String sourceId;
-  final String sourceTitle;
   final String categoryCode;
   final String unitId;
   final String unitTitle;
@@ -137,7 +129,6 @@ class PracticeSessionSummaryData {
       sessionId: (json['sessionId'] ?? '').toString(),
       userId: (json['userId'] ?? '').toString(),
       subjectId: (json['subjectId'] ?? '').toString(),
-      practiceMode: (json['practiceMode'] ?? '').toString(),
       status: (json['status'] ?? '').toString(),
       questionCount: _toInt(json['questionCount']),
       answeredCount: _toInt(json['answeredCount']),
@@ -146,9 +137,6 @@ class PracticeSessionSummaryData {
       startedAt: _toDateTime(json['startedAt']),
       finishedAt: _toDateTime(json['finishedAt']),
       lastAnsweredAt: _toDateTime(json['lastAnsweredAt']),
-      sourceType: (json['sourceType'] ?? '').toString(),
-      sourceId: (json['sourceId'] ?? '').toString(),
-      sourceTitle: (json['sourceTitle'] ?? '').toString(),
       categoryCode: (json['categoryCode'] ?? '').toString(),
       unitId: (json['unitId'] ?? '').toString(),
       unitTitle: (json['unitTitle'] ?? '').toString(),
@@ -287,6 +275,10 @@ class PracticeQuestionData {
   PracticeQuestionData copyWith({
     bool? answered,
     List<String>? userAnswers,
+    bool? favorite,
+    int? noteCount,
+    String? noteSummary,
+    DateTime? noteUpdatedAt,
   }) {
     return PracticeQuestionData(
       questionId: questionId,
@@ -294,10 +286,10 @@ class PracticeQuestionData {
       stem: stem,
       options: options,
       analysis: analysis,
-      favorite: favorite,
-      noteCount: noteCount,
-      noteSummary: noteSummary,
-      noteUpdatedAt: noteUpdatedAt,
+      favorite: favorite ?? this.favorite,
+      noteCount: noteCount ?? this.noteCount,
+      noteSummary: noteSummary ?? this.noteSummary,
+      noteUpdatedAt: noteUpdatedAt ?? this.noteUpdatedAt,
       answered: answered ?? this.answered,
       userAnswers: userAnswers ?? this.userAnswers,
       chapterId: chapterId,

@@ -160,6 +160,11 @@ _Palette _paletteFor(String iconKey) {
         icon: Icons.edit_note_rounded,
         color: AppColors.success,
       );
+    case 'review':
+      return const _Palette(
+        icon: Icons.fact_check_outlined,
+        color: AppColors.primary,
+      );
     case 'wrongbook':
     default:
       return const _Palette(

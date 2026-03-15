@@ -77,7 +77,7 @@ class PracticeHistoryPage extends GetView<PracticeHistoryController> {
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: _PracticeRecordCard(
-                      modeText: item.practiceMode,
+                      modeText: item.displayTitle,
                       questionCount: item.questionCount,
                       correctCount: item.correctCount,
                       wrongCount: item.wrongCount,

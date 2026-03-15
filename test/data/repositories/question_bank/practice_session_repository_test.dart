@@ -17,15 +17,11 @@ class _FakePracticeRemoteDataSource implements PracticeRemoteDataSource {
         'sessionId': 'session-1',
         'userId': userId,
         'subjectId': subjectId,
-        'practiceMode': categoryCode,
         'status': 'in_progress',
         'questionCount': questionCount,
         'answeredCount': 0,
         'correctCount': 0,
         'wrongCount': 0,
-        'sourceType': 'practice_unit',
-        'sourceId': unitId,
-        'sourceTitle': '章节练习',
         'categoryCode': categoryCode,
         'unitId': unitId,
         'unitTitle': unitId.isEmpty ? '' : '第一章',
@@ -78,15 +74,11 @@ class _FakePracticeRemoteDataSource implements PracticeRemoteDataSource {
         'sessionId': sessionId,
         'userId': 'demo-user',
         'subjectId': 'subject-1',
-        'practiceMode': 'chapter_practice',
         'status': 'in_progress',
         'questionCount': 2,
         'answeredCount': 1,
         'correctCount': 1,
         'wrongCount': 0,
-        'sourceType': 'subject',
-        'sourceId': '',
-        'sourceTitle': '章节练习',
         'categoryCode': 'chapter',
         'unitId': 'chapter-1',
         'unitTitle': '第一章',
@@ -248,7 +240,7 @@ void main() {
       expect(launch.unitProgress?.doneCount, 6);
       expect(launch.unitProgress?.correctRate, 83.3);
       expect(launch.currentQuestion?.questionId, 'question-1');
-      expect(detail.session.practiceMode, 'chapter_practice');
+      expect(detail.session.categoryCode, 'chapter');
       expect(detail.session.unitId, 'chapter-1');
       expect(detail.unitProgress?.sessionCount, 3);
       expect(detail.unitProgress?.answeredCount, 12);

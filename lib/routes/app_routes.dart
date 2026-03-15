@@ -7,6 +7,9 @@ abstract class AppRoutes {
   static const subject = '/subject';
   static const wrongBook = '/wrong-book';
   static const practiceHistory = '/practice-history';
+  static const reviewRecords = '/review-records';
+  static const qaThreads = '/qa-threads';
+  static const qaThreadDetail = '/qa-thread-detail';
   static const favorites = '/favorites';
   static const practiceNotes = '/practice-notes';
   static const practiceUnitList = '/practice-unit-list';

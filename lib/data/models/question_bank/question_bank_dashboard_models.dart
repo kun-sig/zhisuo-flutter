@@ -9,7 +9,6 @@ class QuestionBankDashboardData {
     required this.currentSubject,
     required this.examCountdown,
     required this.continueSession,
-    required this.practiceModules,
     required this.practiceCategories,
     required this.practiceUnitsPreview,
     required this.assetTools,
@@ -20,7 +19,6 @@ class QuestionBankDashboardData {
   final CurrentSubjectViewData? currentSubject;
   final ExamCountdownViewData? examCountdown;
   final ContinueSessionViewData? continueSession;
-  final List<PracticeModuleViewData> practiceModules;
   final List<PracticeCategoryCardData> practiceCategories;
   final List<PracticeUnitPreviewData> practiceUnitsPreview;
   final List<AssetToolViewData> assetTools;
@@ -28,22 +26,10 @@ class QuestionBankDashboardData {
   final DateTime? updatedAt;
 
   factory QuestionBankDashboardData.fromJson(Map<String, dynamic> json) {
-    final practiceModules = _toMapList(json['practiceModules'])
-        .map(PracticeModuleViewData.fromJson)
-        .toList()
-      ..sort((a, b) => a.sort.compareTo(b.sort));
-
     final practiceCategories = _toMapList(json['practiceCategories'])
         .map(PracticeCategoryCardData.fromJson)
         .toList()
       ..sort((a, b) => a.sort.compareTo(b.sort));
-
-    final categoryFallbacks = practiceCategories.isEmpty
-        ? (practiceModules
-            .map(PracticeCategoryCardData.fromLegacyModule)
-            .toList()
-          ..sort((a, b) => a.sort.compareTo(b.sort)))
-        : practiceCategories;
 
     final practiceUnitsPreview = _toMapList(json['practiceUnitsPreview'])
         .map(PracticeUnitPreviewData.fromJson)
@@ -51,7 +37,7 @@ class QuestionBankDashboardData {
       ..sort((a, b) => a.sort.compareTo(b.sort));
 
     final previewFallbacks = practiceUnitsPreview.isEmpty
-        ? (categoryFallbacks
+        ? (practiceCategories
             .expand((category) => category.previewUnits)
             .toList()
           ..sort((a, b) => a.sort.compareTo(b.sort)))
@@ -75,8 +61,7 @@ class QuestionBankDashboardData {
         json['continueSession'],
         ContinueSessionViewData.fromJson,
       ),
-      practiceModules: practiceModules,
-      practiceCategories: categoryFallbacks,
+      practiceCategories: practiceCategories,
       practiceUnitsPreview: previewFallbacks,
       assetTools: assetTools,
       todaySummary:
@@ -160,7 +145,6 @@ class ExamCountdownViewData {
 class ContinueSessionViewData {
   const ContinueSessionViewData({
     required this.sessionId,
-    required this.practiceMode,
     required this.progressText,
     required this.lastAnsweredAt,
     required this.categoryCode,
@@ -169,7 +153,6 @@ class ContinueSessionViewData {
   });
 
   final String sessionId;
-  final String practiceMode;
   final String progressText;
   final DateTime? lastAnsweredAt;
   final String categoryCode;
@@ -185,13 +168,12 @@ class ContinueSessionViewData {
     if (title.isNotEmpty) {
       return title;
     }
-    return _resolvePracticeModeDisplayName(practiceMode);
+    return _resolvePracticeCategoryDisplayName(categoryCode);
   }
 
   factory ContinueSessionViewData.fromJson(Map<String, dynamic> json) {
     return ContinueSessionViewData(
       sessionId: (json['sessionId'] ?? '').toString(),
-      practiceMode: (json['practiceMode'] ?? '').toString(),
       progressText: (json['progressText'] ?? '').toString(),
       lastAnsweredAt: _toDateTime(json['lastAnsweredAt']),
       categoryCode: (json['categoryCode'] ?? '').toString(),
@@ -209,7 +191,6 @@ class ContinueSessionViewData {
         : '${unit.doneCount}';
     return ContinueSessionViewData(
       sessionId: '',
-      practiceMode: unit.categoryCode,
       progressText: progressText,
       lastAnsweredAt: unit.lastPracticedAt,
       categoryCode: unit.categoryCode,
@@ -219,72 +200,25 @@ class ContinueSessionViewData {
   }
 }
 
-/// 统一把继续练习里的内部模式码转换成页面可读文案，避免直接透出协议字段。
-String _resolvePracticeModeDisplayName(String practiceMode) {
-  switch (practiceMode.trim().toLowerCase()) {
+/// 统一把分类编码转换成页面可读文案，避免首页继续练习直接透出协议字段。
+String _resolvePracticeCategoryDisplayName(String categoryCode) {
+  switch (categoryCode.trim().toLowerCase()) {
     case 'chapter':
-    case 'chapter_practice':
       return LocaleKeys.practiceSessionCategoryChapter.tr;
     case 'knowledge_point':
-    case 'knowledge_practice':
       return LocaleKeys.practiceSessionCategoryKnowledge.tr;
     case 'mock_paper':
-    case 'mock_exam':
       return LocaleKeys.practiceSessionCategoryMock.tr;
     case 'past_paper':
       return LocaleKeys.practiceSessionCategoryPastPaper.tr;
     case 'wrong_question_practice':
       return LocaleKeys.practiceSessionCategoryWrongQuestion.tr;
     default:
-      final value = practiceMode.trim();
+      final value = categoryCode.trim();
       if (value.isEmpty) {
         return '--';
       }
       return value;
-  }
-}
-
-class PracticeModuleViewData {
-  const PracticeModuleViewData({
-    required this.moduleCode,
-    required this.moduleName,
-    required this.iconKey,
-    required this.enabled,
-    required this.disabledReason,
-    required this.sort,
-    required this.questionCount,
-    required this.paperCount,
-    required this.doneCount,
-    required this.correctRate,
-    required this.badgeText,
-  });
-
-  final String moduleCode;
-  final String moduleName;
-  final String iconKey;
-  final bool enabled;
-  final String disabledReason;
-  final int sort;
-  final int questionCount;
-  final int paperCount;
-  final int doneCount;
-  final double correctRate;
-  final String badgeText;
-
-  factory PracticeModuleViewData.fromJson(Map<String, dynamic> json) {
-    return PracticeModuleViewData(
-      moduleCode: (json['moduleCode'] ?? '').toString(),
-      moduleName: (json['moduleName'] ?? '').toString(),
-      iconKey: (json['iconKey'] ?? '').toString(),
-      enabled: json['enabled'] == true,
-      disabledReason: (json['disabledReason'] ?? '').toString(),
-      sort: _toInt(json['sort']),
-      questionCount: _toInt(json['questionCount']),
-      paperCount: _toInt(json['paperCount']),
-      doneCount: _toInt(json['doneCount']),
-      correctRate: _toPercentRate(json['correctRate']),
-      badgeText: (json['badgeText'] ?? '').toString(),
-    );
   }
 }
 
@@ -330,23 +264,6 @@ class PracticeCategoryCardData {
       completedUnitCount: _toInt(json['completedUnitCount']),
       averageCorrectRate: _toPercentRate(json['averageCorrectRate']),
       previewUnits: previewUnits,
-    );
-  }
-
-  factory PracticeCategoryCardData.fromLegacyModule(
-    PracticeModuleViewData module,
-  ) {
-    return PracticeCategoryCardData(
-      categoryCode: module.moduleCode,
-      categoryName: module.moduleName,
-      iconKey: module.iconKey,
-      enabled: module.enabled,
-      disabledReason: module.disabledReason,
-      sort: module.sort,
-      unitCount: 0,
-      completedUnitCount: 0,
-      averageCorrectRate: 0,
-      previewUnits: const [],
     );
   }
 }

@@ -77,6 +77,7 @@ class QuestionBankRemoteService implements QuestionBankRemoteDataSource {
     required int page,
     required int pageSize,
   }) async {
+    // 练习单元列表只允许走统一公开接口，避免回退到历史分类别名路径。
     return _httpService.post<Map<String, dynamic>>(
       _practiceUnitListPath,
       data: {

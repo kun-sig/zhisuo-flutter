@@ -12,6 +12,16 @@ import '../../routes/app_navigator.dart';
 import '../../services/app_session_service.dart';
 import '../../services/current_subject_service.dart';
 
+class PracticeUnitStatusFilterOption {
+  const PracticeUnitStatusFilterOption({
+    required this.value,
+    required this.labelKey,
+  });
+
+  final String value;
+  final String labelKey;
+}
+
 class PracticeUnitListController extends GetxController {
   PracticeUnitListController(
     this._repository,
@@ -34,6 +44,10 @@ class PracticeUnitListController extends GetxController {
   final categoryName = ''.obs;
   final category = Rxn<PracticeCategoryCardData>();
   final scrollController = ScrollController();
+  final keywordController = TextEditingController();
+  final keyword = ''.obs;
+  final status = ''.obs;
+  final draftStatus = ''.obs;
 
   late final Worker _subjectWorker;
 
@@ -46,6 +60,37 @@ class PracticeUnitListController extends GetxController {
       _currentSubjectService.currentSubject.value?.name.trim() ?? '';
   bool get hasSubject => subjectId.isNotEmpty;
   bool get hasCategoryCode => _categoryCode.isNotEmpty;
+  bool get hasFilter =>
+      keyword.value.trim().isNotEmpty || status.value.trim().isNotEmpty;
+  int get filterCount {
+    var count = 0;
+    if (keyword.value.trim().isNotEmpty) {
+      count += 1;
+    }
+    if (status.value.trim().isNotEmpty) {
+      count += 1;
+    }
+    return count;
+  }
+
+  List<PracticeUnitStatusFilterOption> get statusOptions => const [
+        PracticeUnitStatusFilterOption(
+          value: '',
+          labelKey: LocaleKeys.practiceUnitListFilterStatusAll,
+        ),
+        PracticeUnitStatusFilterOption(
+          value: 'not_started',
+          labelKey: LocaleKeys.questionBankDashboardUnitStatusNotStarted,
+        ),
+        PracticeUnitStatusFilterOption(
+          value: 'in_progress',
+          labelKey: LocaleKeys.questionBankDashboardUnitStatusInProgress,
+        ),
+        PracticeUnitStatusFilterOption(
+          value: 'completed',
+          labelKey: LocaleKeys.questionBankDashboardUnitStatusCompleted,
+        ),
+      ];
 
   String get pageTitle {
     final value =
@@ -89,6 +134,7 @@ class PracticeUnitListController extends GetxController {
     scrollController
       ..removeListener(_handleScroll)
       ..dispose();
+    keywordController.dispose();
     super.onClose();
   }
 
@@ -125,6 +171,8 @@ class PracticeUnitListController extends GetxController {
         userId: _appSessionService.userId,
         subjectId: subjectId,
         categoryCode: _categoryCode,
+        keyword: keyword.value,
+        status: status.value,
         page: 1,
         pageSize: _pageSize,
       );
@@ -163,6 +211,8 @@ class PracticeUnitListController extends GetxController {
         userId: _appSessionService.userId,
         subjectId: subjectId,
         categoryCode: _categoryCode,
+        keyword: keyword.value,
+        status: status.value,
         page: nextPage,
         pageSize: _pageSize,
       );
@@ -208,6 +258,32 @@ class PracticeUnitListController extends GetxController {
       unitTitle: unit.title,
       continueIfExists: true,
     );
+  }
+
+  /// 应用搜索词和状态筛选，并回到第一页重新加载列表。
+  Future<void> applyFilters() async {
+    keyword.value = keywordController.text.trim();
+    status.value = draftStatus.value.trim();
+    await refresh();
+  }
+
+  /// 清空已生效和待生效的筛选条件，保证空结果页也能快速恢复。
+  Future<void> clearFilters() async {
+    keywordController.clear();
+    keyword.value = '';
+    status.value = '';
+    draftStatus.value = '';
+    await refresh();
+  }
+
+  /// 切换状态筛选草稿，重复点击同一项时回到“全部”。
+  void toggleDraftStatus(String value) {
+    final resolvedValue = value.trim();
+    if (draftStatus.value == resolvedValue) {
+      draftStatus.value = '';
+      return;
+    }
+    draftStatus.value = resolvedValue;
   }
 
   /// 从路由参数读取当前分类编码和名称。

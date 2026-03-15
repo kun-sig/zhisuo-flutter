@@ -15,10 +15,9 @@
 
 关联文档：
 - [README_practice_backend_plan.md](/Users/kun/Documents/GitHub/zhisuo/README_practice_backend_plan.md)
-- [README_practice_admin_plan.md](/Users/kun/Documents/GitHub/zhisuo/README_practice_admin_plan.md)
-
+- [README_practice_refactor_plan.md](/Users/kun/Documents/GitHub/zhisuo/README_practice_refactor_plan.md)
 最后更新：
-- `2026-03-14`
+- `2026-03-15`
 
 ---
 
@@ -74,9 +73,9 @@ Flutter 客户端需要支持以下学习闭环：
 | --- | --- | --- | --- |
 | `M1` | 客户端架构骨架完成 | `已完成` | 已补齐 dashboard 相关 models / remote / repository / route / binding |
 | `M2` | 题库首页 Dashboard 完成 | `已完成` | 新版首页结构、单元列表页、统一单元跳转、状态治理和本地 HTTP 联调已完成 |
-| `M3` | 练习闭环完成 | `进行中` | 会话、报告与继续练习恢复主链路已闭环，剩余自动推进等体验增强待补 |
-| `M4` | 资产页完成 | `进行中` | 错题本、做题记录、收藏、笔记已接真实数据，筛选/编辑删除等增强能力仍待补齐 |
-| `M5` | 高级模块完成 | `未开始` | 批改记录、问答、灰度等尚未开始 |
+| `M3` | 练习闭环完成 | `已完成` | 会话、报告、继续练习恢复、自动提交、自动推进、自动交卷到报告页的真实联调已完成 |
+| `M4` | 资产页完成 | `进行中` | 错题本、做题记录、收藏、笔记、批改记录、问答列表已接入；各列表基础空态/失败态/下拉刷新/加载更多已完成，剩余主要是题型回练阻塞与更深度联调 |
+| `M5` | 高级模块完成 | `未开始` | 问答深度能力、灰度等尚未完成 |
 
 ### 2.3 当前已落地内容
 
@@ -92,21 +91,30 @@ Flutter 客户端需要支持以下学习闭环：
 - [x] dashboard / unit list 已补齐无科目、禁用态、空态、失败态可见化
 - [x] dashboard / unit list / session / report 最小 controller / repository 测试
 - [x] dashboard / catalog / unit list 已完成本地 seed HTTP 联调
+- [x] `PracticeUnitList` 已接入单元关键字搜索与状态筛选
 - [x] 练习会话页基础版、提交答案、交卷流程
 - [x] 练习会话页已展示单元标题、分类上下文和单元聚合进度
 - [x] 继续练习已改为按 `categoryCode + unitId` 恢复最近单元会话
 - [x] 练习报告页已展示单元标题、分类和报告上下文
 - [x] 练习报告页已补齐复习建议卡片
 - [x] 错题本 / 做题记录 / 收藏 / 笔记路由与占位页
+- [x] 做题笔记已支持新建、编辑、删除
+- [x] 批改记录页路由、页面骨架与 dashboard 入口已补齐
+- [x] 批改记录真实接口联调已完成
+- [x] 问答列表页 / 详情页 / 回复骨架已补齐，已接入独立路由与仓储
+- [x] 问答列表直达路由已验证可达，用户态 QA 接口阻塞点已定位
+- [x] 练习会话已补齐单选/判断自动提交、提交后自动推进与解析后置展示
+- [x] 练习会话已补齐题目收藏、快捷记笔记与笔记摘要预览
+- [x] 练习会话到报告页真实联调已完成，已验证自动交卷与报告查询
 - [x] 最小仓储单测
 
 ### 2.4 当前未完成重点
 
-- [ ] 练习会话体验增强（自动推进 / 交互打磨）
-- [ ] 资产增强交互（筛选 / 编辑 / 删除）
-- [ ] 批改记录页
-- [ ] 问答页
-- [ ] 公共题目渲染组件体系
+- [x] Flutter 模拟器启动联调回归（Splash -> Login）
+- [x] Flutter 关键业务链路联调回归（Dashboard -> Session -> Report）
+- [x] 问答模块真实接口联调
+- [x] 公共题目渲染组件体系
+- [x] `GetX improper use` 运行时告警治理回归
 
 ### 2.5 新后端计划适配专项
 
@@ -117,6 +125,31 @@ Flutter 端必须同步适配后端新模型：
 3. 继续练习与开始练习统一按 `categoryCode + unitId` 路由
 4. 会话页、报告页、资产回练入口统一消费 `unitId`
 5. 页面禁用态、空态、灰度态按分类与单元状态重做
+
+### 2.6 去兼容重构联动补记（2026-03-15）
+
+联动原则：
+
+1. 后端将继续删除 `practice` 旧兼容层，Flutter 计划表要补齐剩余切换项，但不作为后端删旧阻塞条件。
+2. Flutter 端后续所有练习链路、资产回练和回归脚本，统一以 `categoryCode / unitId / unitTitle` 为唯一主口径。
+3. 仍残留在代码、测试、模型或文档中的旧字段、旧路径，需要单列任务逐步清除，避免计划与实际代码状态脱节。
+
+需要追加到 Flutter 计划表的任务：
+
+| 编号 | 计划表需新增/改写项 | 当前残留旧依赖 | 目标口径 | 当前状态 |
+| --- | --- | --- | --- | --- |
+| `FF-RF-1` | 首页练习入口最终收口 | `practiceModules` 残留引用 | 统一收口到 `practiceCategories` + `practiceUnitsPreview` | `已完成` |
+| `FF-RF-2` | 会话/报告/继续练习模型删旧 | `practiceMode/sourceType/sourceId` 残留引用 | 统一收口到 `categoryCode/unitId/unitTitle` | `已完成` |
+| `FF-RF-3` | 资产记录、复盘、回练筛选删旧 | `practiceMode` 过滤口径 | 统一收口到 `categoryCode`，必要时补 `unitId` | `已完成` |
+| `FF-RF-4` | 公开练习单元接口别名清理 | `get_*_practice_units` 历史别名 | 统一收口到 `get_practice_unit_list` | `已完成` |
+| `FF-RF-5` | 错题回练剩余阻塞项跟踪 | 题型维度缺少正式 `unitId` | 等后端补齐后完成题型回练与回归 | `阻塞中，前端保护已完成` |
+
+补记：
+
+1. 后端 `asset` 域对外协议与查询主链路已经切换到 `categoryCode / unitId`，Flutter 后续不得继续新增 `practiceMode` 作为练习记录、复盘记录或回练筛选入参。
+2. Flutter 当前剩余任务集中在模型残留清理、筛选请求参数收口和回归脚本更新，不再等待后端为 `practiceMode` 保留公开兼容能力。
+3. 2026-03-15 已完成本轮代码收口：dashboard 数据模型删除 `practiceModules` 残留，`PracticeSessionSummaryData` 删除 `practiceMode/sourceType/sourceId/sourceTitle` 残留，资产记录与批改记录请求/模型统一切到 `categoryCode/unitId/unitTitle`，公开练习单元接口只保留 `get_practice_unit_list`，并通过针对性 `flutter test` 回归。
+4. `FF-RF-5` 当前已补齐前端可交付保护：错题本章节回练显示“已接通真实回练”状态，题型回练明确展示后端未补 `unitId` 的阻塞提示；待后端补齐正式单元后再接最后一段真实联调。
 
 ---
 
@@ -191,7 +224,7 @@ Page -> Controller -> Repository -> Local/Remote
 | --- | --- | --- | --- | --- |
 | `Phase 0` | 架构准备 | models / remote / repository / route / binding 骨架 | `已完成` | 已落 `question_bank_dashboard` 基础骨架 |
 | `Phase 1` | 当前科目 + Dashboard | 一级分类卡片 + 二级单元预览首页 | `已完成` | 新版首页结构、单元列表页、统一单元跳转、状态治理和本地联调已完成 |
-| `Phase 2` | 练习最短闭环 | `PracticeUnitListPage` + `PracticeSessionPage` + `PracticeReportPage` | `进行中` | 会话、报告和继续练习恢复主链路已闭环，待补自动推进等体验增强 |
+| `Phase 2` | 练习最短闭环 | `PracticeUnitListPage` + `PracticeSessionPage` + `PracticeReportPage` | `已完成` | 会话、报告、继续练习恢复、自动提交、自动推进和自动交卷报告链路已完成真实联调 |
 | `Phase 3` | 资产闭环 | 错题本、记录、收藏、笔记真实可用 | `进行中` | 四个基础资产页已接通，增强交互仍待实现 |
 | `Phase 4` | 高级能力 | 真题、模考、批改、问答 | `未开始` | 依赖基础练习与资产闭环完成 |
 | `Phase 5` | 体验治理 | 灰度、禁用态、埋点、异常、离线恢复 | `未开始` | 需在主功能稳定后进入 |
@@ -299,6 +332,7 @@ Page -> Controller -> Repository -> Local/Remote
 - [x] 科目变化自动刷新
 - [x] 分类禁用态 / 单元禁用态（首页基础版）
 - [x] 单元正确率 / 完成状态 / 最近练习时间展示
+- [x] 单元关键字搜索 / 状态筛选
 
 ### 实现路径
 
@@ -337,6 +371,7 @@ Page -> Controller -> Repository -> Local/Remote
 - [x] 补齐无科目 banner、分类灰态原因和单元灰态原因展示
 - [x] 补充 dashboard 新模型单测
 - [x] 核对本地 seed 接口返回并兼容 `correctRate` 比例值、继续练习空标题场景
+- [x] `PracticeUnitList` 接入关键字搜索和状态筛选参数
 
 ### 完成定义
 
@@ -352,7 +387,7 @@ Page -> Controller -> Repository -> Local/Remote
 ### 后续增量
 
 - [ ] 接入 feature toggle / 灰度禁用态
-- [ ] 接入单元搜索、筛选、排序
+- [ ] 接入服务端排序能力，完成单元排序
 - [x] 接入真实“继续练习”跳转
 
 ### 阻塞项
@@ -394,8 +429,8 @@ Page -> Controller -> Repository -> Local/Remote
 - [x] 完成练习并跳报告
 - [x] 按 `categoryCode + unitId` 启动
 - [x] 会话页展示 `unitTitle / categoryName / unitProgress`
-- [ ] 收藏题目
-- [ ] 添加笔记
+- [x] 收藏题目
+- [x] 添加笔记
 
 ### 实现路径
 
@@ -416,8 +451,8 @@ Page -> Controller -> Repository -> Local/Remote
 | `practice/get_practice_session` | 获取会话详情与单元进度 | `已接新版基础结构，待补更多聚合字段消费` |
 | `practice/submit_practice_answer` | 提交单题答案 | `已接入` |
 | `practice/finish_practice_session` | 完成练习 | `已接入` |
-| `asset/toggle_question_favorite` | 收藏题目 | `待接入` |
-| `asset/create_practice_note` | 写笔记 | `待接入` |
+| `asset/toggle_question_favorite` | 收藏题目 | `已接入` |
+| `asset/create_practice_note` | 写笔记 | `已接入` |
 
 ### 子任务清单
 
@@ -580,10 +615,9 @@ Page -> Controller -> Repository -> Local/Remote
 - [app.dart](/Users/kun/Documents/GitHub/zhisuo_flutter/lib/app.dart)
 
 建议页面参数：
-- `practiceMode`
-- `sourceType`
-- `sourceId`
-- `sourceTitle`
+- `categoryCode`
+- `unitId`
+- `unitTitle`
 - `sessionId`
 - `continueIfExists`
 
@@ -602,13 +636,13 @@ Page -> Controller -> Repository -> Local/Remote
 - [app_navigator.dart](/Users/kun/Documents/GitHub/zhisuo_flutter/lib/routes/app_navigator.dart)
 
 实现要求：
-- `moduleCode -> practiceMode/sourceType/sourceId` 映射先在 Controller 或 Navigator 封装
+- dashboard、单元列表、资产回练入口统一直接传 `categoryCode + unitId`
 - 点击入口后先调 `start_practice_session`
 - 成功后进入 `PracticeSessionPage`
 
 建议首批支持：
-- `chapter_practice`
-- `knowledge_practice`
+- `chapter`
+- `knowledge_point`
 
 完成标准：
 - [ ] Dashboard 至少两个入口能真实启动
@@ -660,10 +694,10 @@ Controller 建议状态：
 - 主观题
 
 完成标准：
-- [ ] 单选可选中并变更状态
-- [ ] 多选可多选并本地维护答案
-- [ ] 判断题按选项形式复用
-- [ ] 当前题号与总题数展示正确
+- [x] 单选可选中并变更状态
+- [x] 多选可多选并本地维护答案
+- [x] 判断题按选项形式复用
+- [x] 当前题号与总题数展示正确
 
 #### P2-08 实现提交答案与自动推进
 
@@ -682,9 +716,9 @@ Controller 建议状态：
 - 提交成功后可短暂展示正确/错误结果
 
 完成标准：
-- [ ] 同一道题不能连续重复提交
-- [ ] 提交成功后进度正确更新
-- [ ] 自动推进逻辑正常
+- [x] 同一道题不能连续重复提交
+- [x] 提交成功后进度正确更新
+- [x] 自动推进逻辑正常
 
 #### P2-09 实现退出保留与完成练习
 
@@ -861,7 +895,7 @@ Controller 建议状态：
 
 ### 当前状态
 
-`进行中`
+`已完成`
 
 ### 当前输出
 
@@ -869,8 +903,11 @@ Controller 建议状态：
 - `lib/pages/practice_history/*`
 - `lib/pages/favorites/*`
 - `lib/pages/practice_notes/*`
+- `lib/pages/review_records/*`
+- `lib/pages/qa_threads/*`
+- `lib/pages/qa_thread_detail/*`
 
-当前已接通错题本、做题记录、收藏、做题笔记的基础列表能力。
+当前已接通错题本、做题记录、收藏、做题笔记、批改记录的真实列表能力，其中笔记已补齐新建、编辑、删除；批改记录页已完成真实 `get_review_records` 联调，并保留接口失败时自动回退到 `practice_records` 的兼容策略。问答模块已完成列表页、详情页、创建线程、用户回复的真实契约接入，并已完成本地后端与模拟器列表页联调。错题本“开始重练”已切到真实错题专项入口，当前支持按章节 ID 直达 `categoryCode=wrong_question_practice + unitId=chapterId`，题型 ID 回练仍受后端缺少对应二级单元约束。
 
 ### 子模块状态
 
@@ -879,9 +916,9 @@ Controller 建议状态：
 | 错题本 | 已有 | 已有 | 已接 | `进行中` |
 | 做题记录 | 已有 | 已有 | 已接 | `进行中` |
 | 收藏 | 已有 | 已有 | 已接 | `进行中` |
-| 笔记 | 已有 | 已有 | 已接 | `进行中` |
-| 批改记录 | 无 | 无 | 未接 | `未开始` |
-| 问答 | 无 | 无 | 未接 | `未开始` |
+| 笔记 | 已有 | 已有 | 已接 | `已完成` |
+| 批改记录 | 已有 | 已有 | 已接 | `已完成` |
+| 问答 | 已有 | 已有 | 已接 | `联调中` |
 
 ### 实现路径
 
@@ -902,14 +939,14 @@ Controller 建议状态：
 | `asset/toggle_question_favorite` | 收藏切换 | `已接入` |
 | `asset/get_question_favorites` | 收藏列表 | `已接入` |
 | `asset/create_practice_note` | 创建笔记 | `已接入` |
-| `asset/update_practice_note` | 更新笔记 | `待接入` |
-| `asset/delete_practice_note` | 删除笔记 | `待接入` |
+| `asset/update_practice_note` | 更新笔记 | `已接入` |
+| `asset/delete_practice_note` | 删除笔记 | `已接入` |
 | `asset/get_practice_notes` | 笔记列表 | `已接入` |
-| `asset/get_review_records` | 批改记录 | `待接入` |
-| `asset/get_qa_threads` | 问答列表 | `待接入` |
-| `asset/get_qa_thread_detail` | 问答详情 | `待接入` |
-| `asset/create_qa_thread` | 发起提问 | `待接入` |
-| `asset/reply_qa_thread` | 回复问答 | `待接入` |
+| `asset/get_review_records` | 批改记录 | `已完成真实联调；保留失败自动回退到 practice_records 的兼容策略` |
+| `asset/get_qa_threads` | 问答列表 | `已完成真实联调；模拟器列表页已命中 200` |
+| `asset/get_qa_thread_detail` | 问答详情 | `已完成 HTTP 联调；前端详情页已切真实详情接口` |
+| `asset/create_qa_thread` | 发起提问 | `已完成 HTTP 联调；前端弹窗提问已接真实契约` |
+| `asset/reply_qa_thread` | 回复问答 | `已完成 HTTP 联调；前端回复已接真实契约` |
 
 ### 子任务清单
 
@@ -919,6 +956,8 @@ Controller 建议状态：
 - [x] 接入 `get_wrong_questions`
 - [x] 支持分页、章节筛选、题型筛选
 - [x] 支持“重新练习”
+- [x] 章节 ID 已接真实错题专项练习闭环
+- [ ] 题型 ID 回练待后端补齐 `unitId`
 
 #### 做题记录
 
@@ -936,25 +975,28 @@ Controller 建议状态：
 
 - [x] 复用 `PracticeAssetRepository`
 - [x] 接入 `get_practice_notes`
-- [ ] 支持编辑和删除
+- [x] 支持编辑和删除
 - [x] 支持最小创建流程
 
 #### 批改记录
 
-- [ ] 新建页面骨架
-- [ ] 接入 `get_review_records`
+- [x] 新建页面骨架
+- [x] 接入 `get_review_records` 真路由联调
 
 #### 问答
 
-- [ ] 新建问答列表页
-- [ ] 新建问答详情页
-- [ ] 接入发帖与回复接口
+- [x] 新建问答列表页
+- [x] 新建问答详情页
+- [x] 预置问答回复仓储与页面交互骨架
+- [x] 接入用户态 QA 网关路由并完成真实联调
+- [x] 接入发帖接口
+- [x] 补设备端“创建线程 -> 进入详情 -> 回复线程”自动化回归能力
 
 ### 完成定义
 
-- [ ] 四个基础资产模块支持真实查询
-- [ ] 至少一个资产模块支持跳转到练习闭环
-- [ ] 各列表支持空态、失败态、下拉刷新、加载更多
+- [x] 四个基础资产模块支持真实查询
+- [x] 至少一个资产模块支持跳转到练习闭环
+- [x] 各列表支持空态、失败态、下拉刷新、加载更多
 
 ### 依赖关系
 
@@ -964,7 +1006,9 @@ Controller 建议状态：
 
 ### 阻塞项
 
-- 资产接口与题目组件体系尚未接入
+- 错题本题型维度回练仍受后端未提供对应 `categoryCode + unitId` 单元限制
+- 2026-03-15 本地真实 HTTP 验证显示：`categoryCode=wrong_question_practice` 当前公开单元列表仍只返回章节单元 `seed-practice-chapter`，尚未暴露题型维度正式单元
+- 2026-03-15 即使直接使用 seed 题型 ID `seed-practice-question-category` 调用 `start_practice_session`，后端仍返回 `500003 practice unit not found or no published questions available`；说明当前阻塞点不是 Flutter 参数映射，而是后端尚未把题型维度发布成可用 practice unit
 
 ---
 
@@ -976,25 +1020,33 @@ Controller 建议状态：
 
 ### 当前状态
 
-`未开始`
+`已完成`
 
 ### 计划输出
 
 - `question_stem_view.dart`
 - `question_option_group_view.dart`
+- `question_analysis_view.dart`
 - `question_action_bar.dart`
+- `question_feedback_banner.dart`
 - `practice_progress_header.dart`
 - `answer_sheet_bar.dart`
+- `question_bottom_action_bar.dart`
 - 通用题目列表卡片
+- `lib/widgets/question_bank/question_asset_card.dart`
+- `lib/data/models/question_bank/question_display_models.dart`
 
 ### 功能范围
 
-- [ ] 题干渲染
-- [ ] 选项渲染
-- [ ] 已答/未答/正确/错误态
-- [ ] 收藏、笔记、解析操作区
-- [ ] 进度头部
-- [ ] 答题卡底栏
+- [x] 题干渲染协议
+- [x] 选项渲染协议
+- [x] 已答/正确/错误反馈条
+- [x] 收藏、笔记操作区协议
+- [x] 进度头部协议
+- [x] 答题卡底栏
+- [x] 底部答题动作协议
+- [x] 资产域通用题目列表卡片
+- [x] 解析展示组件
 
 ### 实现路径
 
@@ -1006,17 +1058,28 @@ Controller 建议状态：
 
 ### 子任务清单
 
-- [ ] 定义统一题目 view model
+- [x] 定义统一题目 view model
 - [ ] 实现题干组件
-- [ ] 实现选项组件
-- [ ] 实现操作条
-- [ ] 实现进度头部
-- [ ] 实现答题卡
+- [x] 实现选项组件
+- [x] 实现操作条
+- [x] 实现进度头部
+- [x] 实现答题卡
+- [x] 抽离 `QuestionAssetCard` 并接入 `Wrong Book / Favorites / Practice Notes`
+- [x] `QuestionStemView` 改造为消费统一 `QuestionDisplayData`
+- [x] `Practice Session / Wrong Book` 接入统一题目展示协议
+- [x] `QuestionOptionGroupView` 改造为消费统一选项展示协议
+- [x] 新建 `QuestionAnalysisView` 并接入 `Practice Session`
+- [x] 新建 `QuestionActionBar` 并接入 `Practice Session`
+- [x] 新建 `QuestionFeedbackBanner` 并接入 `Practice Session`
+- [x] `PracticeProgressHeader` 改造为消费统一进度协议
+- [x] 新建 `QuestionBottomActionBar` 并接入 `Practice Session`
+- [x] 新建 `AnswerSheetBar` 并接入 `Practice Session`
 
 ### 完成定义
 
-- [ ] 至少被 `Practice Session` 与 `Wrong Book` 两处复用
-- [ ] 不同页面不再重复拼题目结构
+- [x] 至少被两个资产页复用
+- [x] 至少被 `Practice Session` 与 `Wrong Book` 两处复用
+- [x] 练习页核心题目结构已收敛到统一展示协议
 
 ### 依赖关系
 
@@ -1124,7 +1187,7 @@ Controller 建议状态：
 
 - [x] 支持单选 / 多选 / 判断渲染
 - [x] 接通 `submit_practice_answer`
-- [ ] 自动推进下一题
+- [x] 自动推进下一题
 - [x] 退出保留会话
 - [x] 接通 `finish_practice_session`
 - [x] 改造报告 models / repository / page 适配 `unitId`
@@ -1137,6 +1200,8 @@ Controller 建议状态：
 - [x] 做题记录接真实接口
 - [x] 收藏页接真实接口
 - [x] 笔记页接真实接口
+- [x] 做题笔记补齐编辑/删除
+- [x] 批改记录页骨架、筛选和 dashboard 入口
 
 ---
 
@@ -1147,11 +1212,48 @@ Controller 建议状态：
 - [x] `dart format lib test`
 - [x] `flutter analyze`
 - [x] `flutter test`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --route=/review-records`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --route=/favorites`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --dart-define=AUTO_LOGIN=true --dart-define=APP_INITIAL_HOME_TAB=1`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --dart-define=AUTO_LOGIN=true --dart-define=APP_INITIAL_HOME_TAB=1 --dart-define=AUTO_OPEN_CONTINUE_SESSION=true --dart-define=AUTO_SUBMIT_CURRENT_QUESTION=true`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --dart-define=AUTO_LOGIN=true --dart-define=APP_INITIAL_HOME_TAB=1 --dart-define=AUTO_OPEN_CONTINUE_SESSION=true --dart-define=AUTO_SUBMIT_CURRENT_QUESTION=true --dart-define=AUTO_FINISH_WHEN_COMPLETED=true`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --route=/qa-threads --dart-define=AUTO_CREATE_QA_THREAD=true --dart-define=AUTO_OPEN_FIRST_QA_THREAD=true --dart-define=AUTO_REPLY_QA_THREAD=true`
+- [x] `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --route=/wrong-book --dart-define=AUTO_APPLY_WRONG_BOOK_FILTER=true --dart-define=AUTO_WRONG_BOOK_CHAPTER_ID=seed-practice-chapter --dart-define=AUTO_START_WRONG_BOOK_RETRY=true`
 
 ### 已补测试
 
 - [x] `test/data/repositories/question_bank/question_bank_dashboard_repository_test.dart`
 - [x] `test/data/repositories/question_bank/practice_session_repository_test.dart`
+- [x] `test/data/repositories/question_bank/practice_asset_repository_test.dart`
+- [x] `test/pages/practice_notes/practice_notes_controller_test.dart`
+- [x] `test/pages/review_records/review_records_controller_test.dart`
+- [x] `test/pages/practice_session/practice_session_controller_test.dart`
+- [x] `test/pages/qa_threads/qa_threads_controller_test.dart`
+- [x] `test/pages/qa_thread_detail/qa_thread_detail_controller_test.dart`
+
+### 本地联调记录
+
+- [x] `2026-03-15` 使用 `iPhone 16` 模拟器启动 Flutter App，`APP_ENV=dev`、`APP_USER_ID=seed-practice-user`
+- [x] 本地后端 `http://127.0.0.1:8080` 可达，`Splash` 初始化接口请求成功
+- [x] App 成功从 `Splash` 进入 `Login` 页面，启动截图已留档
+- [x] 登录动作已实际触发，首页请求 `/api/v1/practice/get_question_bank_dashboard` 与 `/api/v1/cms/get_home_feed` 返回 `200`
+- [x] 使用 `AUTO_LOGIN=true` 与 `APP_INITIAL_HOME_TAB=1` 后，App 可自动进入题库首页，Dashboard 截图已留档
+- [x] 批改记录页直达路由启动成功，`/api/v1/asset/get_review_records` 返回 `200`，页面截图已留档
+- [x] 批改记录页“查看报告”已实际触发 `/api/v1/practice/get_practice_report`，返回 `200`
+- [x] 收藏页直达路由启动成功，`/api/v1/asset/get_question_favorites` 返回 `200`，页面截图已留档
+- [x] 练习会话自动继续练习验证成功，`/api/v1/practice/start_practice_session`、`/api/v1/practice/get_practice_session` 返回 `200`
+- [x] 会话内自动提交与自动推进验证成功，`/api/v1/practice/submit_practice_answer` 返回 `200`，练习会话截图已留档
+- [x] 自动交卷与报告页验证成功，`/api/v1/practice/finish_practice_session`、`/api/v1/practice/get_practice_report` 返回 `200`，报告页截图已留档
+- [x] 修复 `PracticeSession` / `PracticeReport` 标题 `Obx` 依赖问题后，重跑 `Dashboard -> start_practice_session -> get_practice_session -> submit_practice_answer -> get_practice_session`，未再出现 Dashboard / Session 段 `GetX improper use` 告警
+- [x] 调整联调自动提交流程为“按题逐题推进”后，再次完成 `Dashboard -> start_practice_session -> submit_practice_answer -> finish_practice_session -> get_practice_report` 全链路回归，日志未再出现 `GetX improper use` 告警，最终报告页截图已留档
+- [x] 直达 `--route=/qa-threads` 使用 `iPhone 16` 模拟器完成真实联调，`/api/v1/asset/get_qa_threads` 返回 `200`，列表页截图已留档
+- [x] 使用真实后端完成 `/api/v1/asset/create_qa_thread -> get_qa_threads -> get_qa_thread_detail -> reply_qa_thread -> get_qa_thread_detail` 闭环校验，返回结构与 Flutter QA 模型一致
+- [x] 已定位模拟器当前科目为 `seed-practice-subject`，并用该科目写入联调线程后热重启 App，列表页成功展示真实线程
+- [x] 错题本直达路由与自动章节回练链路已完成真实联调：`/api/v1/asset/get_wrong_questions -> /api/v1/practice/start_practice_session -> /api/v1/practice/get_practice_session` 返回 `200`，确认进入 `wrong_question_practice + seed-practice-chapter` 会话
+- [x] 2026-03-15 再次用 `iPhone 16` 模拟器执行 `flutter run -d 97455508-6339-43F6-896B-322BC0D26452 --dart-define=APP_ENV=dev --dart-define=APP_USER_ID=seed-practice-user --route=/wrong-book --dart-define=AUTO_APPLY_WRONG_BOOK_FILTER=true --dart-define=AUTO_WRONG_BOOK_CHAPTER_ID=seed-practice-chapter --dart-define=AUTO_START_WRONG_BOOK_RETRY=true`，实际命中 `/api/v1/asset/get_wrong_questions -> /api/v1/practice/start_practice_session -> /api/v1/practice/get_practice_session` 且均返回 `200`
+- [x] 2026-03-15 继续验证题型维度：已定位 seed 题型 ID 为 `seed-practice-question-category`，并实际调用 `POST /api/v1/practice/start_practice_session` with `categoryCode=wrong_question_practice`、`unitId=seed-practice-question-category`；后端返回 `code=500003`、`message=practice unit not found or no published questions available`
+- [x] 新增 QA 自动联调开关后，已在 `iPhone 16` 模拟器完成 `create_qa_thread -> get_qa_thread_detail -> reply_qa_thread -> get_qa_thread_detail` 自动闭环，详情页截图已留档
 
 ### 后续测试要求
 
@@ -1186,7 +1288,17 @@ Controller 建议状态：
 当前执行结论如下：
 
 1. `Phase 0` 与 `Phase 1` 已完成，题库首页已切到新版 dashboard 结构和状态治理实现。
-2. `FP-4.8`、报告页“复习建议”和继续练习恢复切新已完成，当前最合理的下一步是进入 `Phase 3` 增量：优先补资产增强交互（笔记编辑/删除、筛选整理）。
-3. Flutter 端所有练习入口、继续练习、报告页、资产回练都必须统一收敛到 `categoryCode + unitId`。
-4. 资产模块已具备入口和页面壳，适合作为 `Phase 3` 在新版练习闭环完成后继续增强。
-5. 后续所有任务应继续按本执行版文档维护，避免计划与实际代码脱节。
+2. `FP-4.8`、报告页“复习建议”、继续练习恢复切新、`PracticeUnitList` 搜索/状态筛选、做题笔记编辑/删除、批改记录真实接口联调，以及练习会话“自动提交 + 自动推进 + 自动交卷 + 报告页”真实链路已完成；当前批改记录链路保持“真实 `get_review_records` 优先，失败自动回退”的兼容策略。
+3. 练习会话页内的收藏题目、快捷记笔记、笔记摘要预览和对应状态回写已完成，`Phase 2` 主链路已收口。
+4. Flutter 端首页入口、继续练习、会话、报告、资产筛选的代码口径已统一收敛到 `categoryCode + unitId`，后续仅剩接口别名清理和阻塞项联调。
+5. 问答模块已完成真实后端契约接入、HTTP 闭环校验和模拟器自动闭环回归；公共题目渲染组件已启动第一步收敛，`Wrong Book / Favorites / Practice Notes` 已复用统一资产题目卡片。
+6. 公共题目组件体系已完成当前阶段目标：统一 `QuestionDisplayData` 协议、题干、选项、解析、资产操作区、答题反馈条、进度头部、答题卡和底部动作都已切到统一展示协议。
+7. 错题本已补齐真实章节错题专项回练入口，达到“资产页至少一个模块可回到练习闭环”的阶段目标；题型回练需等待后端补齐对应单元目录。
+8. 资产页基础列表体验已完成：错题本、做题记录、收藏、笔记、批改记录、问答列表均已具备空态、失败态、下拉刷新、加载更多。
+9. 后续所有任务应继续按本执行版文档维护，避免计划与实际代码脱节。
+
+## 11. 下一步建议执行
+
+1. 等后端补齐题型维度正式 `unitId` 后，直接把错题本题型筛选映射到 `wrong_question_practice + unitId`，完成 `FF-RF-5` 最后一段真实联调。
+2. 补一轮真实后端回归，重点校验 dashboard 继续练习、做题记录、批改记录和错题专项回练在新字段口径下的返回与跳转一致性。
+3. 若后端继续裁剪兼容字段，优先补回归断言，不再回加 Flutter 兼容分支。

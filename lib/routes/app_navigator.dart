@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../data/models/question_bank/qa_thread_models.dart';
 import 'app_pages.dart';
 
 class AppNavigator {
@@ -16,6 +17,19 @@ class AppNavigator {
   static startSubjectPage() => Get.toNamed(AppRoutes.subject, arguments: {});
   static startWrongBookPage() => Get.toNamed(AppRoutes.wrongBook);
   static startPracticeHistoryPage() => Get.toNamed(AppRoutes.practiceHistory);
+  static startReviewRecordsPage() => Get.toNamed(AppRoutes.reviewRecords);
+  static startQaThreadsPage() => Get.toNamed(AppRoutes.qaThreads);
+  static startQaThreadDetailPage({
+    required String threadId,
+    QaThreadData? thread,
+  }) =>
+      Get.toNamed(
+        AppRoutes.qaThreadDetail,
+        arguments: {
+          'threadId': threadId.trim(),
+          if (thread != null) 'thread': thread,
+        },
+      );
   static startFavoritesPage() => Get.toNamed(AppRoutes.favorites);
   static startPracticeNotesPage() => Get.toNamed(AppRoutes.practiceNotes);
   static startPracticeUnitListPage({

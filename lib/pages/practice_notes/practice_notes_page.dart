@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/question_bank/question_asset_card.dart';
 import 'practice_notes_controller.dart';
 
 class PracticeNotesPage extends GetView<PracticeNotesController> {
@@ -91,6 +92,12 @@ class PracticeNotesPage extends GetView<PracticeNotesController> {
                     child: _PracticeNoteCard(
                       item: item,
                       statusText: controller.resolveStatusText(item.status),
+                      isUpdating:
+                          controller.updatingNoteId.value == item.id.trim(),
+                      isDeleting:
+                          controller.deletingNoteId.value == item.id.trim(),
+                      onEdit: () => controller.openEditDialog(item),
+                      onDelete: () => controller.confirmDeleteNote(item),
                     ),
                   ),
                 ),
@@ -174,87 +181,68 @@ class _PracticeNoteCard extends StatelessWidget {
   const _PracticeNoteCard({
     required this.item,
     required this.statusText,
+    required this.isUpdating,
+    required this.isDeleting,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final PracticeNoteAssetItem item;
   final String statusText;
+  final bool isUpdating;
+  final bool isDeleting;
+  final Future<void> Function() onEdit;
+  final Future<void> Function() onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.large),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.content.toString().trim().isEmpty
-                ? LocaleKeys.practiceNotesContentEmpty.tr
-                : item.content.toString().trim(),
-            style: AppTextStyles.bodyLarge.copyWith(height: 1.6),
+    return QuestionAssetCard(
+      title: item.questionId.toString(),
+      body: item.content.toString(),
+      emptyBody: LocaleKeys.practiceNotesContentEmpty.tr,
+      highlightText: statusText,
+      highlightColor: AppColors.primary,
+      metaItems: [
+        QuestionAssetMetaItem(
+          label: LocaleKeys.practiceNotesQuestionId.tr,
+          value: item.questionId.toString(),
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.practiceNotesSessionId.tr,
+          value: item.sessionId.toString(),
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.practiceNotesStatus.tr,
+          value: statusText.trim().isEmpty
+              ? LocaleKeys.practiceNotesStatusUnknown.tr
+              : statusText.trim(),
+        ),
+        QuestionAssetMetaItem(
+          label: LocaleKeys.practiceNotesUpdatedAt.tr,
+          value: _formatDateTime(item.updatedAt),
+        ),
+        if (item.reviewRemark.toString().trim().isNotEmpty)
+          QuestionAssetMetaItem(
+            label: LocaleKeys.practiceNotesReviewRemark.tr,
+            value: item.reviewRemark.toString().trim(),
           ),
-          const SizedBox(height: AppSpacing.md),
-          _InfoRow(
-            label: LocaleKeys.practiceNotesQuestionId.tr,
-            value: item.questionId.toString().trim().isEmpty
-                ? '--'
-                : item.questionId.toString().trim(),
-          ),
-          _InfoRow(
-            label: LocaleKeys.practiceNotesSessionId.tr,
-            value: item.sessionId.toString().trim().isEmpty
-                ? '--'
-                : item.sessionId.toString().trim(),
-          ),
-          _InfoRow(
-            label: LocaleKeys.practiceNotesStatus.tr,
-            value: statusText.trim().isEmpty
-                ? LocaleKeys.practiceNotesStatusUnknown.tr
-                : statusText.trim(),
-          ),
-          _InfoRow(
-            label: LocaleKeys.practiceNotesUpdatedAt.tr,
-            value: _formatDateTime(item.updatedAt),
-          ),
-          if (item.reviewRemark.toString().trim().isNotEmpty)
-            _InfoRow(
-              label: LocaleKeys.practiceNotesReviewRemark.tr,
-              value: item.reviewRemark.toString().trim(),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 88,
-            child: Text(label, style: AppTextStyles.caption),
-          ),
-          Expanded(
-            child: Text(value, style: AppTextStyles.body),
-          ),
-        ],
-      ),
+      ],
+      actions: [
+        QuestionAssetActionItem(
+          label: isUpdating
+              ? LocaleKeys.practiceNotesEditing.tr
+              : LocaleKeys.practiceNotesEditAction.tr,
+          onPressed: isUpdating || isDeleting ? null : onEdit,
+        ),
+        QuestionAssetActionItem(
+          label: isDeleting
+              ? LocaleKeys.practiceNotesDeleting.tr
+              : LocaleKeys.practiceNotesDeleteAction.tr,
+          onPressed: isUpdating || isDeleting ? null : onDelete,
+          isPrimary: true,
+          foregroundColor: AppColors.error,
+        ),
+      ],
     );
   }
 }

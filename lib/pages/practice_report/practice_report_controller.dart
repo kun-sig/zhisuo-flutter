@@ -23,11 +23,13 @@ class PracticeReportController extends GetxController {
 
   /// 报告页标题优先显示单元标题，缺失时回退默认标题。
   String get pageTitle {
+    // 先触达报告响应式数据，确保标题上的 Obx 能正确建立依赖关系。
+    final report = data;
     final routeTitle = _unitTitle.trim();
     if (routeTitle.isNotEmpty) {
       return routeTitle;
     }
-    final reportTitle = data?.unitTitle.trim() ?? '';
+    final reportTitle = report?.unitTitle.trim() ?? '';
     if (reportTitle.isNotEmpty) {
       return reportTitle;
     }
@@ -75,7 +77,8 @@ class PracticeReportController extends GetxController {
     if (weakestChapter != null && weakestChapter.correctRate < 80) {
       suggestions.add(
         LocaleKeys.practiceReportSuggestionWeakChapter.trParams({
-          'name': weakestChapter.name.trim().isEmpty ? '--' : weakestChapter.name,
+          'name':
+              weakestChapter.name.trim().isEmpty ? '--' : weakestChapter.name,
         }),
       );
     }

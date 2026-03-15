@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../data/models/question_bank/question_display_models.dart';
 import '../../i18n/locale_keys.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
@@ -9,23 +10,17 @@ import '../../theme/app_text_styles.dart';
 
 class PracticeProgressHeader extends StatelessWidget {
   const PracticeProgressHeader({
-    required this.title,
-    required this.currentNumber,
-    required this.totalCount,
-    required this.answeredCount,
-    required this.remainingCount,
+    required this.data,
     super.key,
   });
 
-  final String title;
-  final int currentNumber;
-  final int totalCount;
-  final int answeredCount;
-  final int remainingCount;
+  final QuestionProgressDisplayData data;
 
+  /// 统一渲染题目进度头部，避免页面层重复拼装进度文案和统计信息。
   @override
   Widget build(BuildContext context) {
-    final progress = totalCount <= 0 ? 0.0 : answeredCount / totalCount;
+    final progress =
+        data.totalCount <= 0 ? 0.0 : data.answeredCount / data.totalCount;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -37,7 +32,7 @@ class PracticeProgressHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            data.title,
             style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -52,16 +47,16 @@ class PracticeProgressHeader extends StatelessWidget {
             children: [
               Text(
                 LocaleKeys.practiceSessionProgressIndex.trParams({
-                  'current': '$currentNumber',
-                  'total': '$totalCount',
+                  'current': '${data.currentNumber}',
+                  'total': '${data.totalCount}',
                 }),
                 style: AppTextStyles.caption,
               ),
               const Spacer(),
               Text(
                 LocaleKeys.practiceSessionProgressSummary.trParams({
-                  'answered': '$answeredCount',
-                  'remaining': '$remainingCount',
+                  'answered': '${data.answeredCount}',
+                  'remaining': '${data.remainingCount}',
                 }),
                 style: AppTextStyles.caption,
               ),

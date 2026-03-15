@@ -42,6 +42,7 @@ class QuestionBankDashboardRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
+    // Repository 层只透传统一单元列表接口，不再保留章节/知识点/试卷等历史别名封装。
     final resolvedPage = page <= 0 ? 1 : page;
     final resolvedPageSize = pageSize <= 0 ? 20 : pageSize;
     final data = await _remoteDataSource.getPracticeUnitList(
@@ -70,9 +71,7 @@ class QuestionBankDashboardRepository {
   }) {
     final subjectName = currentSubject?.name.trim() ?? '';
     final hasSubject = subjectName.isNotEmpty;
-    final practiceModules = _defaultPracticeModules(enabled: hasSubject);
-    final practiceCategories =
-        practiceModules.map(PracticeCategoryCardData.fromLegacyModule).toList();
+    final practiceCategories = _defaultPracticeCategories(enabled: hasSubject);
 
     return QuestionBankDashboardData(
       currentSubject: hasSubject
@@ -83,7 +82,6 @@ class QuestionBankDashboardRepository {
           : null,
       examCountdown: null,
       continueSession: null,
-      practiceModules: practiceModules,
       practiceCategories: practiceCategories,
       practiceUnitsPreview: const [],
       assetTools: _defaultAssetTools(enabled: hasSubject),
@@ -97,29 +95,28 @@ class QuestionBankDashboardRepository {
     );
   }
 
-  List<PracticeModuleViewData> _defaultPracticeModules({
+  /// 首页兜底分类只保留正式 `categoryCode` 集合，避免再回退到旧模块模型。
+  List<PracticeCategoryCardData> _defaultPracticeCategories({
     required bool enabled,
   }) {
     return const [
-      ('chapter_practice', '章节练习', 'chapter', 10),
-      ('knowledge_practice', '知识点练习', 'knowledge', 20),
+      ('chapter', '章节练习', 'chapter', 10),
+      ('knowledge_point', '知识点练习', 'knowledge', 20),
       ('mock_paper', '模拟试卷', 'mock', 30),
       ('past_paper', '历年真题', 'paper', 40),
-      ('high_frequency_point', '高频考点', 'hotpoint', 50),
-      ('wrong_question_practice', '高频错题', 'wrong', 60),
+      ('wrong_question_practice', '错题重练', 'wrong', 50),
     ].map((item) {
-      return PracticeModuleViewData(
-        moduleCode: item.$1,
-        moduleName: item.$2,
+      return PracticeCategoryCardData(
+        categoryCode: item.$1,
+        categoryName: item.$2,
         iconKey: item.$3,
         enabled: enabled,
         disabledReason: '',
         sort: item.$4,
-        questionCount: 0,
-        paperCount: 0,
-        doneCount: 0,
-        correctRate: 0,
-        badgeText: '',
+        unitCount: 0,
+        completedUnitCount: 0,
+        averageCorrectRate: 0,
+        previewUnits: const [],
       );
     }).toList();
   }
@@ -132,6 +129,7 @@ class QuestionBankDashboardRepository {
       ('practice_records', '做题记录', 'record', 20),
       ('question_favorites', '试题收藏', 'favorite', 30),
       ('practice_notes', '做题笔记', 'note', 40),
+      ('review_records', '批改记录', 'review', 50),
     ].map((item) {
       return AssetToolViewData(
         toolCode: item.$1,

@@ -6,6 +6,10 @@ import 'package:zhisuo_flutter/routes/app_navigator.dart';
 
 class LoginController extends GetxController {
   static LoginController get to => Get.find();
+  static const bool _autoLogin = bool.fromEnvironment(
+    'AUTO_LOGIN',
+    defaultValue: false,
+  );
 
   /// 登录状态
   final isLoggedIn = false.obs;
@@ -72,5 +76,9 @@ class LoginController extends GetxController {
   void onReady() {
     super.onReady();
     Logger.d("LoginController is ready");
+    // 仅在显式联调开关开启时自动提交登录，避免每次调试都手动点登录按钮。
+    if (_autoLogin) {
+      Future<void>.delayed(const Duration(milliseconds: 300), submit);
+    }
   }
 }

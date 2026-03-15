@@ -107,6 +107,21 @@ class LocaleKeys {
       'practice_unit_list_summary_completed';
   static const practiceUnitListSummaryAccuracy =
       'practice_unit_list_summary_accuracy';
+  static const practiceUnitListSummaryFilters =
+      'practice_unit_list_summary_filters';
+  static const practiceUnitListFilterTitle = 'practice_unit_list_filter_title';
+  static const practiceUnitListFilterKeyword =
+      'practice_unit_list_filter_keyword';
+  static const practiceUnitListFilterKeywordHint =
+      'practice_unit_list_filter_keyword_hint';
+  static const practiceUnitListFilterStatus =
+      'practice_unit_list_filter_status';
+  static const practiceUnitListFilterApply = 'practice_unit_list_filter_apply';
+  static const practiceUnitListFilterClear = 'practice_unit_list_filter_clear';
+  static const practiceUnitListFilterStatusAll =
+      'practice_unit_list_filter_status_all';
+  static const practiceUnitListEmptyFiltered =
+      'practice_unit_list_empty_filtered';
   static const practiceUnitListLoadMore = 'practice_unit_list_load_more';
   static const practiceUnitListNoMore = 'practice_unit_list_no_more';
   static const practiceSessionTitle = 'practice_session_title';
@@ -123,6 +138,8 @@ class LocaleKeys {
   static const practiceSessionProgressIndex = 'practice_session_progress_index';
   static const practiceSessionProgressSummary =
       'practice_session_progress_summary';
+  static const practiceSessionAnswerSheetTitle =
+      'practice_session_answer_sheet_title';
   static const practiceSessionContextCategory =
       'practice_session_context_category';
   static const practiceSessionContextDone = 'practice_session_context_done';
@@ -153,6 +170,37 @@ class LocaleKeys {
   static const practiceSessionAnsweredCorrect =
       'practice_session_answered_correct';
   static const practiceSessionAnsweredWrong = 'practice_session_answered_wrong';
+  static const practiceSessionAssetsTitle = 'practice_session_assets_title';
+  static const practiceSessionFavoriteLoading =
+      'practice_session_favorite_loading';
+  static const practiceSessionFavoriteActive =
+      'practice_session_favorite_active';
+  static const practiceSessionFavoriteInactive =
+      'practice_session_favorite_inactive';
+  static const practiceSessionFavoriteAdded = 'practice_session_favorite_added';
+  static const practiceSessionFavoriteRemoved =
+      'practice_session_favorite_removed';
+  static const practiceSessionFavoriteFailed =
+      'practice_session_favorite_failed';
+  static const practiceSessionNoteCreate = 'practice_session_note_create';
+  static const practiceSessionNoteAppend = 'practice_session_note_append';
+  static const practiceSessionNoteTitle = 'practice_session_note_title';
+  static const practiceSessionNoteInputLabel =
+      'practice_session_note_input_label';
+  static const practiceSessionNoteInputHint =
+      'practice_session_note_input_hint';
+  static const practiceSessionNoteCancel = 'practice_session_note_cancel';
+  static const practiceSessionNoteConfirm = 'practice_session_note_confirm';
+  static const practiceSessionNoteInputEmpty =
+      'practice_session_note_input_empty';
+  static const practiceSessionNoteSubmitting =
+      'practice_session_note_submitting';
+  static const practiceSessionNoteCreateSuccess =
+      'practice_session_note_create_success';
+  static const practiceSessionNoteCreateFailed =
+      'practice_session_note_create_failed';
+  static const practiceSessionNotePreviewTitle =
+      'practice_session_note_preview_title';
   static const practiceSessionExitTitle = 'practice_session_exit_title';
   static const practiceSessionExitMessage = 'practice_session_exit_message';
   static const practiceSessionExitStay = 'practice_session_exit_stay';
@@ -235,6 +283,9 @@ class LocaleKeys {
   static const wrongBookRetryNeedFilter = 'wrong_book_retry_need_filter';
   static const wrongBookRetrySingleFilterOnly =
       'wrong_book_retry_single_filter_only';
+  static const wrongBookRetryQuestionCategoryUnsupported =
+      'wrong_book_retry_question_category_unsupported';
+  static const wrongBookRetryChapterReady = 'wrong_book_retry_chapter_ready';
   static const wrongBookRetryPlanned = 'wrong_book_retry_planned';
   static const practiceHistoryTitle = 'practice_history_title';
   static const practiceHistoryDescription = 'practice_history_description';
@@ -256,6 +307,74 @@ class LocaleKeys {
       'practice_history_missing_session';
   static const practiceHistoryLoadMore = 'practice_history_load_more';
   static const practiceHistoryNoMore = 'practice_history_no_more';
+  static const reviewRecordsTitle = 'review_records_title';
+  static const reviewRecordsLoadFailed = 'review_records_load_failed';
+  static const reviewRecordsRetry = 'review_records_retry';
+  static const reviewRecordsEmpty = 'review_records_empty';
+  static const reviewRecordsNeedSubject = 'review_records_need_subject';
+  static const reviewRecordsSummarySubject = 'review_records_summary_subject';
+  static const reviewRecordsSummaryTotal = 'review_records_summary_total';
+  static const reviewRecordsFilterTitle = 'review_records_filter_title';
+  static const reviewRecordsFilterAll = 'review_records_filter_all';
+  static const reviewRecordsEmptyFiltered = 'review_records_empty_filtered';
+  static const reviewRecordsLoadMore = 'review_records_load_more';
+  static const reviewRecordsNoMore = 'review_records_no_more';
+  static const qaThreadsTitle = 'qa_threads_title';
+  static const qaThreadsLoadFailed = 'qa_threads_load_failed';
+  static const qaThreadsUnavailable = 'qa_threads_unavailable';
+  static const qaThreadsRetry = 'qa_threads_retry';
+  static const qaThreadsEmpty = 'qa_threads_empty';
+  static const qaThreadsNeedSubject = 'qa_threads_need_subject';
+  static const qaThreadsSummarySubject = 'qa_threads_summary_subject';
+  static const qaThreadsSummaryTotal = 'qa_threads_summary_total';
+  static const qaThreadsFilterTitle = 'qa_threads_filter_title';
+  static const qaThreadsFilterAll = 'qa_threads_filter_all';
+  static const qaThreadsEmptyFiltered = 'qa_threads_empty_filtered';
+  static const qaThreadsLoadMore = 'qa_threads_load_more';
+  static const qaThreadsNoMore = 'qa_threads_no_more';
+  static const qaThreadsQuestionId = 'qa_threads_question_id';
+  static const qaThreadsSessionId = 'qa_threads_session_id';
+  static const qaThreadsReplies = 'qa_threads_replies';
+  static const qaThreadsLastReplyAt = 'qa_threads_last_reply_at';
+  static const qaThreadsCreatedAt = 'qa_threads_created_at';
+  static const qaThreadsStatus = 'qa_threads_status';
+  static const qaThreadsStatusUnknown = 'qa_threads_status_unknown';
+  static const qaThreadsStatusOpen = 'qa_threads_status_open';
+  static const qaThreadsStatusClosed = 'qa_threads_status_closed';
+  static const qaThreadsContentEmpty = 'qa_threads_content_empty';
+  static const qaThreadsCreateAction = 'qa_threads_create_action';
+  static const qaThreadsCreateTitle = 'qa_threads_create_title';
+  static const qaThreadsCreateQuestionId = 'qa_threads_create_question_id';
+  static const qaThreadsCreateSessionId = 'qa_threads_create_session_id';
+  static const qaThreadsCreateThreadTitle = 'qa_threads_create_thread_title';
+  static const qaThreadsCreateContent = 'qa_threads_create_content';
+  static const qaThreadsCreateCancel = 'qa_threads_create_cancel';
+  static const qaThreadsCreateConfirm = 'qa_threads_create_confirm';
+  static const qaThreadsCreateInvalid = 'qa_threads_create_invalid';
+  static const qaThreadsCreateSuccess = 'qa_threads_create_success';
+  static const qaThreadsCreateFailed = 'qa_threads_create_failed';
+  static const qaThreadsCreateUnavailable = 'qa_threads_create_unavailable';
+  static const qaThreadDetailTitle = 'qa_thread_detail_title';
+  static const qaThreadDetailMissingThread = 'qa_thread_detail_missing_thread';
+  static const qaThreadDetailRepliesTitle = 'qa_thread_detail_replies_title';
+  static const qaThreadDetailRepliesEmpty = 'qa_thread_detail_replies_empty';
+  static const qaThreadDetailAuthorAdmin = 'qa_thread_detail_author_admin';
+  static const qaThreadDetailAuthorUser = 'qa_thread_detail_author_user';
+  static const qaThreadDetailReplyAction = 'qa_thread_detail_reply_action';
+  static const qaThreadDetailReplySubmitting =
+      'qa_thread_detail_reply_submitting';
+  static const qaThreadDetailReplyTitle = 'qa_thread_detail_reply_title';
+  static const qaThreadDetailReplyInput = 'qa_thread_detail_reply_input';
+  static const qaThreadDetailReplyHint = 'qa_thread_detail_reply_hint';
+  static const qaThreadDetailReplyCancel = 'qa_thread_detail_reply_cancel';
+  static const qaThreadDetailReplyConfirm = 'qa_thread_detail_reply_confirm';
+  static const qaThreadDetailReplyInvalid = 'qa_thread_detail_reply_invalid';
+  static const qaThreadDetailReplySuccess = 'qa_thread_detail_reply_success';
+  static const qaThreadDetailReplyFailed = 'qa_thread_detail_reply_failed';
+  static const qaThreadDetailReplyUnavailable =
+      'qa_thread_detail_reply_unavailable';
+  static const qaThreadDetailClosedNotice = 'qa_thread_detail_closed_notice';
+  static const qaThreadDetailCloseRemark = 'qa_thread_detail_close_remark';
   static const favoritesTitle = 'favorites_title';
   static const favoritesDescription = 'favorites_description';
   static const favoritesLoadFailed = 'favorites_load_failed';
@@ -305,6 +424,20 @@ class LocaleKeys {
   static const practiceNotesCreateInvalid = 'practice_notes_create_invalid';
   static const practiceNotesCreateSuccess = 'practice_notes_create_success';
   static const practiceNotesCreateFailed = 'practice_notes_create_failed';
+  static const practiceNotesEditAction = 'practice_notes_edit_action';
+  static const practiceNotesEditing = 'practice_notes_editing';
+  static const practiceNotesEditTitle = 'practice_notes_edit_title';
+  static const practiceNotesEditConfirm = 'practice_notes_edit_confirm';
+  static const practiceNotesEditInvalid = 'practice_notes_edit_invalid';
+  static const practiceNotesEditSuccess = 'practice_notes_edit_success';
+  static const practiceNotesEditFailed = 'practice_notes_edit_failed';
+  static const practiceNotesDeleteAction = 'practice_notes_delete_action';
+  static const practiceNotesDeleting = 'practice_notes_deleting';
+  static const practiceNotesDeleteTitle = 'practice_notes_delete_title';
+  static const practiceNotesDeleteMessage = 'practice_notes_delete_message';
+  static const practiceNotesDeleteConfirm = 'practice_notes_delete_confirm';
+  static const practiceNotesDeleteSuccess = 'practice_notes_delete_success';
+  static const practiceNotesDeleteFailed = 'practice_notes_delete_failed';
   static const studyCenterTab = 'study_center_tab';
   static const discoverTab = 'discover_tab';
   static const mineTab = 'mine_tab';

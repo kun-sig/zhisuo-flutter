@@ -48,24 +48,6 @@ class PracticeUnitListPage extends GetView<PracticeUnitListController> {
             );
           }
 
-          if (controller.items.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: controller.refresh,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  const SizedBox(height: 120),
-                  _EmptyState(
-                    message: controller.isCategoryDisabled
-                        ? controller.categoryDisabledReason
-                        : LocaleKeys.practiceUnitListEmpty.tr,
-                    sliverFriendly: true,
-                  ),
-                ],
-              ),
-            );
-          }
-
           return RefreshIndicator(
             onRefresh: controller.refresh,
             child: ListView(
@@ -79,6 +61,8 @@ class PracticeUnitListPage extends GetView<PracticeUnitListController> {
                   completedUnitCount: controller.completedUnitCount,
                   averageCorrectRate: controller.averageCorrectRate,
                 ),
+                const SizedBox(height: AppSpacing.md),
+                _FilterCard(controller: controller),
                 if (controller.isCategoryDisabled) ...[
                   const SizedBox(height: AppSpacing.md),
                   _InfoBanner(message: controller.categoryDisabledReason),
@@ -88,20 +72,30 @@ class PracticeUnitListPage extends GetView<PracticeUnitListController> {
                   _ErrorBanner(message: controller.errorText.value),
                 ],
                 const SizedBox(height: AppSpacing.md),
-                ...controller.items.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                    child: PracticeUnitCard(
-                      item: item,
-                      enabledOverride:
-                          controller.isCategoryDisabled ? false : null,
-                      disabledReasonOverride: controller.isCategoryDisabled
-                          ? controller.categoryDisabledReason
-                          : null,
-                      onTap: () => controller.onUnitTap(item),
+                if (controller.items.isEmpty)
+                  _EmptyState(
+                    message: controller.isCategoryDisabled
+                        ? controller.categoryDisabledReason
+                        : controller.hasFilter
+                            ? LocaleKeys.practiceUnitListEmptyFiltered.tr
+                            : LocaleKeys.practiceUnitListEmpty.tr,
+                    sliverFriendly: true,
+                  )
+                else
+                  ...controller.items.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: PracticeUnitCard(
+                        item: item,
+                        enabledOverride:
+                            controller.isCategoryDisabled ? false : null,
+                        disabledReasonOverride: controller.isCategoryDisabled
+                            ? controller.categoryDisabledReason
+                            : null,
+                        onTap: () => controller.onUnitTap(item),
+                      ),
                     ),
                   ),
-                ),
                 _LoadMoreFooter(
                   hasMore: controller.hasMore.value,
                   isLoadingMore: controller.isLoadingMore.value,
@@ -191,6 +185,112 @@ class _SummaryCard extends StatelessWidget {
               label: LocaleKeys.practiceUnitListSummaryAccuracy.tr,
               value: '${averageCorrectRate.toStringAsFixed(0)}%',
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterCard extends StatelessWidget {
+  const _FilterCard({
+    required this.controller,
+  });
+
+  final PracticeUnitListController controller;
+
+  /// 构建单元搜索与状态筛选卡片，把远端已支持的过滤参数收口到同一个入口。
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                LocaleKeys.practiceUnitListFilterTitle.tr,
+                style: AppTextStyles.title.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              if (controller.filterCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.medium),
+                  ),
+                  child: Text(
+                    '${LocaleKeys.practiceUnitListSummaryFilters.tr} ${controller.filterCount}',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: controller.keywordController,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.practiceUnitListFilterKeyword.tr,
+              hintText: LocaleKeys.practiceUnitListFilterKeywordHint.tr,
+              prefixIcon: const Icon(Icons.search),
+            ),
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => controller.applyFilters(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            LocaleKeys.practiceUnitListFilterStatus.tr,
+            style: AppTextStyles.caption.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Obx(
+            () => Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: controller.statusOptions
+                  .map(
+                    (option) => ChoiceChip(
+                      label: Text(option.labelKey.tr),
+                      selected:
+                          controller.draftStatus.value == option.value.trim(),
+                      onSelected: (_) =>
+                          controller.toggleDraftStatus(option.value),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: [
+              ElevatedButton(
+                onPressed: controller.applyFilters,
+                child: Text(LocaleKeys.practiceUnitListFilterApply.tr),
+              ),
+              OutlinedButton(
+                onPressed: controller.clearFilters,
+                child: Text(LocaleKeys.practiceUnitListFilterClear.tr),
+              ),
+            ],
           ),
         ],
       ),

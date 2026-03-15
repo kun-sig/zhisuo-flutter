@@ -61,11 +61,44 @@ void main() {
       expect(controller.items.single.unitId, 'chapter-1');
       controller.onClose();
     });
+
+    test('applyFilters forwards keyword and status to repository', () async {
+      configureGetTest(
+        arguments: const {
+          'categoryCode': 'chapter',
+          'categoryName': '章节练习',
+        },
+      );
+      final repository = _FakePracticeUnitListRepository();
+      final controller = PracticeUnitListController(
+        repository,
+        FakeAppSessionService(),
+        FakeCurrentSubjectService(subject: buildSubject()),
+      );
+
+      controller.onInit();
+      await pumpController();
+
+      controller.keywordController.text = '第一章';
+      controller.toggleDraftStatus('in_progress');
+      await controller.applyFilters();
+      await pumpController();
+
+      expect(controller.keyword.value, '第一章');
+      expect(controller.status.value, 'in_progress');
+      expect(controller.filterCount, 2);
+      expect(repository.lastKeyword, '第一章');
+      expect(repository.lastStatus, 'in_progress');
+      controller.onClose();
+    });
   });
 }
 
 class _FakePracticeUnitListRepository
     implements QuestionBankDashboardRepository {
+  String lastKeyword = '';
+  String lastStatus = '';
+
   @override
   QuestionBankDashboardData buildFallback({
     SubjectItem? currentSubject,
@@ -117,6 +150,8 @@ class _FakePracticeUnitListRepository
     int page = 1,
     int pageSize = 20,
   }) async {
+    lastKeyword = keyword;
+    lastStatus = status;
     return const PracticeUnitListPageData(
       items: [
         PracticeUnitPreviewData(

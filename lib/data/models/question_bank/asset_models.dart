@@ -1,3 +1,7 @@
+import 'package:get/get.dart';
+
+import '../../../i18n/locale_keys.dart';
+
 class AssetPageResult<T> {
   const AssetPageResult({
     required this.items,
@@ -52,7 +56,9 @@ class PracticeRecordAssetItem {
     required this.userId,
     required this.subjectId,
     required this.sessionId,
-    required this.practiceMode,
+    required this.categoryCode,
+    required this.unitId,
+    required this.unitTitle,
     required this.questionCount,
     required this.correctCount,
     required this.wrongCount,
@@ -65,7 +71,9 @@ class PracticeRecordAssetItem {
   final String userId;
   final String subjectId;
   final String sessionId;
-  final String practiceMode;
+  final String categoryCode;
+  final String unitId;
+  final String unitTitle;
   final int questionCount;
   final int correctCount;
   final int wrongCount;
@@ -73,13 +81,24 @@ class PracticeRecordAssetItem {
   final int durationSeconds;
   final DateTime? finishedAt;
 
+  /// 资产记录卡片优先展示正式单元标题，缺失时再回退到分类文案。
+  String get displayTitle {
+    final title = unitTitle.trim();
+    if (title.isNotEmpty) {
+      return title;
+    }
+    return _resolvePracticeCategoryDisplayName(categoryCode);
+  }
+
   factory PracticeRecordAssetItem.fromJson(Map<String, dynamic> json) {
     return PracticeRecordAssetItem(
       id: (json['id'] ?? '').toString(),
       userId: (json['userId'] ?? '').toString(),
       subjectId: (json['subjectId'] ?? '').toString(),
       sessionId: (json['sessionId'] ?? '').toString(),
-      practiceMode: (json['practiceMode'] ?? '').toString(),
+      categoryCode: (json['categoryCode'] ?? '').toString(),
+      unitId: (json['unitId'] ?? '').toString(),
+      unitTitle: (json['unitTitle'] ?? '').toString(),
       questionCount: _toInt(json['questionCount']),
       correctCount: _toInt(json['correctCount']),
       wrongCount: _toInt(json['wrongCount']),
@@ -249,4 +268,26 @@ AssetPageResult<T> mapAssetPageResult<T>(
     page: page,
     pageSize: pageSize,
   );
+}
+
+/// 统一把正式分类编码转换成页面可读文案，避免资产页直接暴露协议字段。
+String _resolvePracticeCategoryDisplayName(String categoryCode) {
+  switch (categoryCode.trim().toLowerCase()) {
+    case 'chapter':
+      return LocaleKeys.practiceSessionCategoryChapter.tr;
+    case 'knowledge_point':
+      return LocaleKeys.practiceSessionCategoryKnowledge.tr;
+    case 'mock_paper':
+      return LocaleKeys.practiceSessionCategoryMock.tr;
+    case 'past_paper':
+      return LocaleKeys.practiceSessionCategoryPastPaper.tr;
+    case 'wrong_question_practice':
+      return LocaleKeys.practiceSessionCategoryWrongQuestion.tr;
+    default:
+      final value = categoryCode.trim();
+      if (value.isEmpty) {
+        return '--';
+      }
+      return value;
+  }
 }

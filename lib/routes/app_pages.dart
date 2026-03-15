@@ -10,6 +10,12 @@ import '../pages/practice_history/practice_history_binding.dart';
 import '../pages/practice_history/practice_history_page.dart';
 import '../pages/practice_notes/practice_notes_binding.dart';
 import '../pages/practice_notes/practice_notes_page.dart';
+import '../pages/qa_thread_detail/qa_thread_detail_binding.dart';
+import '../pages/qa_thread_detail/qa_thread_detail_page.dart';
+import '../pages/qa_threads/qa_threads_binding.dart';
+import '../pages/qa_threads/qa_threads_page.dart';
+import '../pages/review_records/review_records_binding.dart';
+import '../pages/review_records/review_records_page.dart';
 import '../pages/practice_report/practice_report_binding.dart';
 import '../pages/practice_report/practice_report_page.dart';
 import '../pages/practice_session/practice_session_binding.dart';
@@ -73,6 +79,21 @@ class AppPages {
       name: AppRoutes.practiceHistory,
       page: () => PracticeHistoryPage(),
       binding: PracticeHistoryBinding(),
+    ),
+    _pageBuilder(
+      name: AppRoutes.reviewRecords,
+      page: () => ReviewRecordsPage(),
+      binding: ReviewRecordsBinding(),
+    ),
+    _pageBuilder(
+      name: AppRoutes.qaThreads,
+      page: () => QaThreadsPage(),
+      binding: QaThreadsBinding(),
+    ),
+    _pageBuilder(
+      name: AppRoutes.qaThreadDetail,
+      page: () => QaThreadDetailPage(),
+      binding: QaThreadDetailBinding(),
     ),
     _pageBuilder(
       name: AppRoutes.favorites,
